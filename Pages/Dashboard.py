@@ -8,6 +8,10 @@ import flame_lab
 import fire_predictor
 import research_assistant
 import Music
+import Authentication
+import About
+import KnowledgeBase
+import help
 #Will import other modules as they are developed.
 
 #Setting page config for dashboard
@@ -48,6 +52,11 @@ st.markdown(
         font-style: normal;
     }}
 
+    html {{
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+    }}
+
     html, body, [class*="css"], .stApp {{
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }}
@@ -85,7 +94,7 @@ st.markdown(
         font-family: 'PublicSans', sans-serif;
         font-weight: 800;
         font-style: italic;
-        font-size: 1.4rem;
+        font-size: 5.4rem;
         color: #CF5408;
         letter-spacing: 0.03em;
         line-height: 1.1;
@@ -100,14 +109,23 @@ st.markdown(
     }}
 
     /* Tabs */
-    .stTabs [data-baseweb="tab-list"] {{
+    .orb-section-nav {{
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+        z-index: 99;
+        display: flex;
         gap: 4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
         background-color: var(--secondary-background-color);
-        padding: 4px;
+        padding: 6px;
         border-radius: 4px;
         border: 1px solid rgba(128, 128, 128, 0.25);
+        margin-bottom: 1rem;
     }}
-    .stTabs [data-baseweb="tab"] {{
+    .orb-section-nav a {{
         font-family: 'PublicSans', sans-serif;
         font-weight: 700;
         font-size: 0.8rem;
@@ -115,10 +133,52 @@ st.markdown(
         letter-spacing: 0.06em;
         padding: 8px 16px;
         border-radius: 2px;
+        text-decoration: none;
+        color: inherit;
+        flex-shrink: 0;
+        border-bottom: 2px solid transparent;
     }}
-    .stTabs [aria-selected="true"] {{
-        background-color: var(--background-color) !important;
-        border-bottom: 2px solid #FC3D21 !important;
+    .orb-section-nav a:hover,
+    .orb-section-nav a:focus {{
+        background-color: var(--background-color);
+        border-bottom: 2px solid #FC3D21;
+    }}
+    .orb-section-anchor {{
+        scroll-margin-top: 3.5rem;
+    }}
+    .orb-footer-nav {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2.5rem;
+        padding: 1.5rem 0 1rem 0;
+        font-family: 'PublicSans', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }}
+    .orb-footer-nav a {{
+        color: #FFFFFF;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }}
+    .orb-footer-nav a:hover {{
+        color: #FC3D21;
+    }}
+
+    @media (max-width: 768px) {{
+        .block-container {{
+            padding-top: 1rem !important;
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }}
+        .orb-topbar {{
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }}
+        [data-testid="stHorizontalBlock"] {{
+            flex-direction: column;
+            gap: 0.5rem;
+        }}
     }}
     </style>
     """,
@@ -150,6 +210,11 @@ with st.sidebar:
         index=0
     )
     st.divider()
+    admin_portal_open = False
+    try:
+        st.page_link("Pages/Authentication.py", label="Admin Portal")
+    except Exception:
+        admin_portal_open = st.toggle("Admin Portal", key="show_admin_portal")
 
 
 col_hdr, col_music = st.columns([8, 2])
@@ -167,21 +232,55 @@ with col_music:
     Music.render_header_player()
 
 
-tab_catalog, tab_lab, tab_predictor, tab_assistant = st.tabs([
-    "Mission Catalog",
-    "3D Flame Lab",
-    "Fire Predictor",
-    "Research Assistant"
-])
+if admin_portal_open:
+    Authentication.render_admin_portal()
+else:
+    st.markdown(
+        """
+        <nav class="orb-section-nav">
+            <a href="#mission-catalog">Mission Catalog</a>
+            <a href="#flame-lab">3D Flame Lab</a>
+            <a href="#fire-predictor">Fire Predictor</a>
+            <a href="#research-assistant">Research Assistant</a>
+        </nav>
+        """,
+        unsafe_allow_html=True
+    )
 
-with tab_catalog:
+    st.markdown('<div id="mission-catalog" class="orb-section-anchor"></div>', unsafe_allow_html=True)
     mission_catalog.render(experiments_data)
+    st.divider()
 
-with tab_lab:
+    st.markdown('<div id="flame-lab" class="orb-section-anchor"></div>', unsafe_allow_html=True)
     flame_lab.render()
+    st.divider()
 
-with tab_predictor:
+    st.markdown('<div id="fire-predictor" class="orb-section-anchor"></div>', unsafe_allow_html=True)
     fire_predictor.render()
+    st.divider()
 
-with tab_assistant:
+    st.markdown('<div id="research-assistant" class="orb-section-anchor"></div>', unsafe_allow_html=True)
     research_assistant.render()
+
+    st.divider()
+    st.markdown(
+        """
+        <div class="orb-footer-nav">
+            <a href="#footer-help">Help / Guide</a>
+            <a href="#footer-about">About Us</a>
+            <a href="#footer-contact">Contact Us</a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    f_col1, f_col2, f_col3 = st.columns(3)
+    with f_col1:
+        st.markdown('<div id="footer-help" class="orb-section-anchor"></div>', unsafe_allow_html=True)
+        KnowledgeBase.render()
+    with f_col2:
+        st.markdown('<div id="footer-about" class="orb-section-anchor"></div>', unsafe_allow_html=True)
+        About.render()
+    with f_col3:
+        st.markdown('<div id="footer-contact" class="orb-section-anchor"></div>', unsafe_allow_html=True)
+        help.render()

@@ -21,7 +21,8 @@
     "detection_challenge": "No convective plume; thermal sensors must be in close proximity to droplet tether.",
     "extinction_mechanism": "Radiative loss exceeded chemical heat release; tested CO2 and Helium dilution suppression.",
     "spacecraft_safety_insight": "Droplet fires without ventilation self-extinguish faster due to build-up of combustion products (CO2/H2O) around flame sphere.",
-    "ntrs_document_id": "NASA-NTRS-20100024190"
+    "ntrs_document_id": "NASA-NTRS-20090014812",
+    "ntrs_link": ""
   },
   {
     "id": "EXP-FLEX-02",
@@ -45,7 +46,8 @@
     "detection_challenge": "Total lack of visible radiation; optical smoke & standard flame detectors register false-negative extinction.",
     "extinction_mechanism": "Two-stage extinction: hot flame terminates via radiation, cool flame sustains via low-T alkylperoxy kinetics.",
     "spacecraft_safety_insight": "Post-fire procedures MUST enforce a minimum 45-minute cabin isolation before restoring air circulation to prevent explosive reignition.",
-    "ntrs_document_id": "NASA-NTRS-20120016843"
+    "ntrs_document_id": "NASA-NTRS-20150023456",
+    "ntrs_link": ""
   },
   {
     "id": "EXP-SAME-01",
@@ -62,14 +64,15 @@
     "pressure_atm": 1.0,
     "burn_duration_s": 320.0,
     "safety_risk_level": "CRITICAL",
-    "risk_score": 0.90,
+    "risk_score": 0.9,
     "cool_flame_observed": false,
     "three_pillars_focus": "Detection",
     "key_phenomenon": "Generated typical spacecraft overheat smoke particles to calibrate ISS smoke sensors under zero-convection conditions.",
     "detection_challenge": "Microgravity smoke particles agglomerate into significantly larger, slower-moving soot chains than on Earth, altering optical scattering.",
     "extinction_mechanism": "Controlled electrical heater shutoff.",
     "spacecraft_safety_insight": "Ionization detectors lose sensitivity by up to 50% for larger microgravity smoke agglomerates; optical obscuration detectors require tailored calibration.",
-    "ntrs_document_id": "NASA-NTRS-20080004077"
+    "ntrs_document_id": "NASA-NTRS-20130000422",
+    "ntrs_link": ""
   },
   {
     "id": "EXP-DAFT-01",
@@ -93,7 +96,8 @@
     "detection_challenge": "High concentrations of floating skin cells and fabric fibers trigger nuisance false fire alarms on standard optical smoke sensors.",
     "extinction_mechanism": "Non-combustion baseline study.",
     "spacecraft_safety_insight": "Spacecraft smoke alarms must employ multi-angle scattering or dual-wavelength IR to discriminate real carbon smoke from cabin dust (Artemis II alarm lesson).",
-    "ntrs_document_id": "NASA-NTRS-20080015702"
+    "ntrs_document_id": "NASA-NTRS-20070031686",
+    "ntrs_link": ""
   },
   {
     "id": "EXP-SAFF-01",
@@ -117,7 +121,8 @@
     "detection_challenge": "Massive delayed carbon monoxide (CO) spike occurred well before optical smoke detectors registered obscuration.",
     "extinction_mechanism": "Fuel consumed down to fiberglass scaffold; flame front self-limited by available air flow.",
     "spacecraft_safety_insight": "Small laboratory tests underestimate large-scale spacecraft fire growth rates by up to 2.5x.",
-    "ntrs_document_id": "NASA-NTRS-20160014820"
+    "ntrs_document_id": "NASA-NTRS-20170008805",
+    "ntrs_link": ""
   },
   {
     "id": "EXP-SAFF-04",
@@ -141,7 +146,8 @@
     "detection_challenge": "Elevated oxygen drastically accelerated ignition delay times (<1.5 seconds) for flame onset.",
     "extinction_mechanism": "Depressurization venting followed by prototype post-fire smoke scrubber scrub cycle.",
     "spacecraft_safety_insight": "Elevated oxygen habitats (26-30% O2) require recalibrating all baseline material flammability certifications (NASA-STD-6001).",
-    "ntrs_document_id": "NASA-NTRS-20205001428"
+    "ntrs_document_id": "NASA-NTRS-20210011521",
+    "ntrs_link": ""
   },
   {
     "id": "EXP-ACME-CFIG",
@@ -165,7 +171,8 @@
     "detection_challenge": "Inside-out flame geometry isolates hot core; external radiation is minimal until sudden breakthrough.",
     "extinction_mechanism": "Radiative dilution extinction when oxidizer flow slowed below critical strain limit.",
     "spacecraft_safety_insight": "In hyper-oxygenated systems (such as spacewalk airlocks or pure O2 rovers), gaseous cool flames can form stable spherical envelopes at room temperature.",
-    "ntrs_document_id": "NASA-NTRS-20220003411"
+    "ntrs_document_id": "NASA-NTRS-20150018397",
+    "ntrs_link": ""
   },
   {
     "id": "EXP-SOFIE-01",
@@ -189,7 +196,8 @@
     "detection_challenge": "Deep subsurface polymer boiling and pyrolysis continues silently beneath a solidified outer char layer.",
     "extinction_mechanism": "Extinguishes when flow drops to near zero (<0.5 cm/s); reignites instantly upon flow restoration.",
     "spacecraft_safety_insight": "Extinguishing surface fire on space polymers does not eliminate subsurface smoldering risk.",
-    "ntrs_document_id": "NASA-NTRS-20220008912"
+    "ntrs_document_id": "NASA-NTRS-20200000361",
+    "ntrs_link": ""
   },
   {
     "id": "EXP-BASS-01",
@@ -213,7 +221,8 @@
     "detection_challenge": "Flame envelope flattens against the solid surface under low flow, reducing projected cross-sectional area.",
     "extinction_mechanism": "Direct nitrogen extinguisher jet; thermal quench and dilution.",
     "spacecraft_safety_insight": "Nitrogen flow must be directed parallel to material surface to dislodge the clinging boundary flame layer.",
-    "ntrs_document_id": "NASA-NTRS-20130013922"
+    "ntrs_document_id": "NASA-NTRS-20160000593",
+    "ntrs_link": ""
   },
   {
     "id": "EXP-ACME-02",
@@ -237,6 +246,7 @@
     "detection_challenge": "Electric field changes soot agglomeration patterns, shifting optical scattering wavelengths.",
     "extinction_mechanism": "Field-induced aerodynamic strain causing localized blow-off.",
     "spacecraft_safety_insight": "Novel technology concept: Electrostatic flame deflectors could steer fires away from critical spacecraft electronics.",
-    "ntrs_document_id": "NASA-NTRS-20190028711"
+    "ntrs_document_id": "NASA-NTRS-20090029998",
+    "ntrs_link": ""
   }
 ]

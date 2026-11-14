@@ -9,16 +9,12 @@ import random
 # 1. NASA Wake Up Music
 # 2. NASA Moon Tunes
 # 3. Voyager Golden Record
-'''TO PUT ALL TRACKS IN A JSON FILE AND READ FROM IT, SO THAT IT IS EASIER TO ADD MORE TRACKS AND PLAYLISTS IN THE FUTURE.'''
+#ONLY taking 10 tracks from the three playlists, as the API is not working properly and is asking to login, which is not ideal for a public-facing app.
 #links: https://open.spotify.com/playlist/3Z9bBKzJIH1CDOHbocizHN
 #https://open.spotify.com/playlist/7y7hnyXo4wtBSfigri0vgg
 #https://open.spotify.com/playlist/6pcuzwZSIw7OgL149bgJmZ
 
-#MAJOR BUG: API asks to login, is appearing patch and doesn't play track songs
-#Either use another solution or hardcode the tracks with proper licenses
-# Worst case: scrap for base elevator music
-#worst to worst case: scrap music as a whole
-#Need to add multi browser and window support
+#Only available after login
 TRACKS = [
     {
         "name": "Space Oddity - David Bowie",
@@ -26,32 +22,51 @@ TRACKS = [
         "id": "72Z17vmmeQKAg8bptWvpVG",
     },
     {
-        "name": "Here Comes The Sun - The Beatles",
-        "playlist": "NASA Wake Up Music",
-        "id": "6dGnYIeXmHdcikdzNNDMm2",
+        "name": "Space Song - Beach House",
+        "playlist": "NASA Moon Tunes",
+        "id": "7H0ya83CMmgFcOhw0UB6ow",
+    },
+    {
+        "name": "Contact - Daft Punk",
+        "playlist": "NASA Moon Tunes",
+        "id": "2KHRENHQzTIQ001nlP9Gdc",
+    },
+    {
+        "name": "The Great Gig in the Sky - Pink Floyd",
+        "playlist": "NASA Moon Tunes",
+        "id": "1BzrVqFPMh2wGkybtkvNBn",
     },
     {
         "name": "Rocket Man - Elton John",
-        "playlist": "NASA Moon Tunes",
+        "playlist": "NASA Wake Up Music",
         "id": "3gdewACMIVMEWVbyb8O9sY",
     },
     {
-        "name": "Starman - David Bowie",
-        "playlist": "NASA Moon Tunes",
-        "id": "0pQskrTITgmCMyr85tb9qq",
+        "name": "Fly Me to the Moon - Frank Sinatra",
+        "playlist": "NASA Wake Up Music",
+        "id": "0yg49bYAl6VLzqqXKKRYvA",
     },
     {
-        "name": "Johnny B. Goode - Chuck Berry",
+        "name": "Brandenburg Concerto No. 2 - J.S. Bach",
         "playlist": "Voyager Golden Record",
-        "id": "2QfiRTz5Yc8DdShCxG1tB2",
+        "id": "7pIkLvY2JWlmjyF6MBZBbC",
     },
     {
-        "name": "Brandenburg Concerto No. 2 - Bach",
+        "name": "Jaat Kahan Ho - Kesarbai Kerkar",
         "playlist": "Voyager Golden Record",
-        "id": "4c2W3VKsOFoIg2SFaO6DY5",
+        "id": "2UJ8Fg20zeJiC8WQEEE9uQ",
+    },
+    {
+        "name": "Dark Was the Night, Cold Was the Ground - Blind Willie Johnson",
+        "playlist": "Voyager Golden Record",
+        "id": "6u4FEA3oRz5kxriZVYpoQJ",
+    },
+    {
+        "name": "El Cascabel - Trio Aguilillas",
+        "playlist": "Voyager Golden Record",
+        "id": "2ID2393aRMYjbt14fuP735",
     },
 ]
-
 
 def _load_vinyl_b64():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -71,7 +86,7 @@ def render_header_player():
     <style>
         html, body {{ margin: 0; padding: 0; background: transparent; overflow: hidden; }}
     </style>
-    <div id="music-widget" style="display:flex; flex-direction:column; align-items:flex-end; font-family:Inter,sans-serif; user-select:none; width:100%;">
+    <div id="music-widget" style="display:flex; flex-direction:column; align-items:flex-end; font-family:Inter,sans-serif; user-select:none; width:100%; padding-top:14px;">
         <div id="vinyl-btn" title="Click: On/Mute | Double-click: Change track"
              style="position:relative; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:6px; padding:3px; box-sizing:border-box;">
             <img id="vinyl-img" src="data:image/png;base64,{vinyl_b64}"

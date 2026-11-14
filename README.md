@@ -28,11 +28,21 @@ Make sure you have Python installed on your system (Python 3.8 or higher is reco
    1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and log in.
    2. Click **Create app**, enter an app name/description, and set a Redirect URI (e.g., `http://localhost:8501`).
    3. Open **Settings** to copy your **Client ID** and **Client Secret**.
-   4. Create `.streamlit/secrets.toml` in the project root and add:
+   4. Add them to `.streamlit/secrets.toml`:
       ```toml
       SPOTIPY_CLIENT_ID = "your_client_id_here"
       SPOTIPY_CLIENT_SECRET = "your_client_secret_here"
       SPOTIPY_REDIRECT_URI = "http://localhost:8501"
+      ```
+
+5. **Configure Supabase Credentials (Optional, for Authentication & Admin Portal):**
+   1. Go to the [Supabase Dashboard](https://supabase.com/dashboard) and create or select your project.
+   2. Navigate to **Project Settings** > **API**.
+   3. Copy your **Project URL** and the **anon / public** API key.
+   4. Add them to `.streamlit/secrets.toml`:
+      ```toml
+      SUPABASE_URL = "your_supabase_project_url"
+      SUPABASE_KEY = "your_supabase_anon_key"
       ```
 
 ## Usage
