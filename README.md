@@ -1,4 +1,4 @@
-##  <span style="color: #CF5408;"> _Org.Ignite_  </span>
+##  <span style="color: #CF5408;"> _Org.Ignite_ </span>
 Org.Ignite uses NASA databases and technical reports about combustioin science and presents an SI powered dashboard which sumarrizes different experiments (Eg. FLEX, SoFIE, Sapphire, etc.). It ranks the impact and consequence of each type of hazard, provides a 3D flame model to predict the outputs in various conditions and gives a knowledge base about this domain. Presets are avalible to test against certain conditions and precautions are provided.
 
 ## Prerequisites
