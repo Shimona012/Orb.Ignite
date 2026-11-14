@@ -7,6 +7,7 @@ import mission_catalog
 import flame_lab
 import fire_predictor
 import research_assistant
+import Music
 #Will import other modules as they are developed.
 
 #Setting page config for dashboard
@@ -49,8 +50,6 @@ st.markdown(
 
     html, body, [class*="css"], .stApp {{
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background-color: #0B0D17;
-        color: #E9EEF6;
     }}
 
     /* Tighten top padding so title above tabs doesn't push content down */
@@ -63,7 +62,6 @@ st.markdown(
         font-family: 'PublicSans', sans-serif !important;
         font-weight: 700 !important;
         letter-spacing: -0.01em;
-        color: #FFFFFF;
     }}
 
     code, pre, [data-testid="stMetricValue"] {{
@@ -104,10 +102,10 @@ st.markdown(
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {{
         gap: 4px;
-        background-color: #111726;
+        background-color: var(--secondary-background-color);
         padding: 4px;
-        border-radius: 2px;
-        border: 1px solid #1C2A44;
+        border-radius: 4px;
+        border: 1px solid rgba(128, 128, 128, 0.25);
     }}
     .stTabs [data-baseweb="tab"] {{
         font-family: 'PublicSans', sans-serif;
@@ -116,12 +114,10 @@ st.markdown(
         text-transform: uppercase;
         letter-spacing: 0.06em;
         padding: 8px 16px;
-        color: #8C9FB5;
         border-radius: 2px;
     }}
     .stTabs [aria-selected="true"] {{
-        background-color: #1C2A44 !important;
-        color: #FFFFFF !important;
+        background-color: var(--background-color) !important;
         border-bottom: 2px solid #FC3D21 !important;
     }}
     </style>
@@ -156,15 +152,19 @@ with st.sidebar:
     st.divider()
 
 
-st.markdown(
-    """
-    <div class="orb-topbar">
-        <span class="orb-brand-title">Orb.Ignite</span>
-        <span class="orb-brand-tag">TO BE ADDED TAGLINE</span>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+col_hdr, col_music = st.columns([8, 2])
+with col_hdr:
+    st.markdown(
+        """
+        <div class="orb-topbar">
+            <span class="orb-brand-title">Orb.Ignite</span>
+            <span class="orb-brand-tag">TO BE ADDED TAGLINE</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+with col_music:
+    Music.render_header_player()
 
 
 tab_catalog, tab_lab, tab_predictor, tab_assistant = st.tabs([
