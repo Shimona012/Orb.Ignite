@@ -15,6 +15,7 @@ import random
 #https://open.spotify.com/playlist/6pcuzwZSIw7OgL149bgJmZ
 
 #Only available after login
+#To add if fails elevator royalty free music or lofi.
 TRACKS = [
     {
         "name": "Space Oddity - David Bowie",

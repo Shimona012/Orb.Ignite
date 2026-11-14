@@ -73,12 +73,15 @@ def render():
         gravity = st.slider("Gravity Level (g)", 0.0, 1.0, default_g, 0.02)
         oxygen = st.slider("Oxygen Concentration (% O₂)", 15.0, 35.0, default_o2, 0.5)
         ventilation = st.slider("Cabin Airflow / Ventilation (cm/s)", 0.0, 20.0, default_flow, 1.0)
+        area_m2 = st.slider("Enclosure / Sample Area (m²)", 0.1, 10.0, 1.0, 0.1)
         colorscheme = st.selectbox("Color Palette", ["Dynamic (Experiment Optical)", "Dynamic (Temp)", "Hot", "Inferno", "Turbo", "Plasma"])
 
-        state = combustion_physics.evaluate_combustion_state(fuel_type, gravity, oxygen, ventilation)
+        state = combustion_physics.evaluate_combustion_state(fuel_type, gravity, oxygen, ventilation, area_m2=area_m2)
         st.markdown(
             f"**Detected Suite:** `{state['code']}`  \n"
             f"**Category Surety:** `{state['surety_pct']}%`  \n"
+            f"**Threat Level:** `{state['threat']['threat_score']}/100 ({state['threat']['threat_tier']})`  \n"
+            f"**Area Regime:** {state['area_scaling']['area_regime']}  \n"
             f"**Regime:** {state['regime_label']}"
         )
 
@@ -125,6 +128,9 @@ def render():
 
         with st.expander(f"View Governing Equation — {state['equation_name']} ({state['surety_pct']}% Surety)", expanded=False):
             st.latex(state["equation_latex"])
-            m_cols = st.columns(len(state["metrics"]))
-            for idx, (k, v) in enumerate(state["metrics"].items()):
-                m_cols[idx].metric(k, str(v))
+            metric_items = list(state["metrics"].items())
+            for row_start in range(0, len(metric_items), 4):
+                row_items = metric_items[row_start:row_start + 4]
+                m_cols = st.columns(len(row_items))
+                for idx, (k, v) in enumerate(row_items):
+                    m_cols[idx].metric(k, str(v))

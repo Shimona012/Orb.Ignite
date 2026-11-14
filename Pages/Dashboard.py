@@ -11,8 +11,23 @@ import Music
 import Authentication
 import About
 import KnowledgeBase
-import help
+import contact_us
 #Will import other modules as they are developed.
+
+#need to make hoverable carts for the bottom 3 buttons
+@st.dialog("Help / Metric Guide", width="large")
+def show_help_dialog():
+    KnowledgeBase.render()
+
+
+@st.dialog("About Orb.Ignite", width="large")
+def show_about_dialog():
+    About.render()
+
+
+@st.dialog("Contact Us", width="small")
+def show_contact_dialog():
+    contact_us.render()
 
 #Setting page config for dashboard
 st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="collapsed")
@@ -146,23 +161,16 @@ st.markdown(
     .orb-section-anchor {{
         scroll-margin-top: 3.5rem;
     }}
-    .orb-footer-nav {{
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2.5rem;
-        padding: 1.5rem 0 1rem 0;
-        font-family: 'PublicSans', sans-serif;
-        font-size: 1.25rem;
-        font-weight: 700;
-        letter-spacing: -0.01em;
+    button[kind="tertiary"][key*="btn_footer_"] p,
+    button[data-testid="baseButton-tertiary"] p {{
+        font-family: 'PublicSans', sans-serif !important;
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.01em !important;
     }}
-    .orb-footer-nav a {{
-        color: #FFFFFF;
-        text-decoration: none;
-        transition: color 0.2s ease;
-    }}
-    .orb-footer-nav a:hover {{
-        color: #FC3D21;
+    button[kind="tertiary"][key*="btn_footer_"]:hover p,
+    button[data-testid="baseButton-tertiary"]:hover p {{
+        color: #FC3D21 !important;
     }}
 
     @media (max-width: 768px) {{
@@ -263,24 +271,38 @@ else:
     research_assistant.render()
 
     st.divider()
-    st.markdown(
-        """
-        <div class="orb-footer-nav">
-            <a href="#footer-help">Help / Guide</a>
-            <a href="#footer-about">About Us</a>
-            <a href="#footer-contact">Contact Us</a>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
 
-    f_col1, f_col2, f_col3 = st.columns(3)
+    if "active_footer_view" not in st.session_state:
+        st.session_state["active_footer_view"] = None
+
+    f_col1, f_col2, f_col3, f_col4 = st.columns([1.2, 1.2, 1.2, 2.4])
     with f_col1:
-        st.markdown('<div id="footer-help" class="orb-section-anchor"></div>', unsafe_allow_html=True)
-        KnowledgeBase.render()
+        if st.button("Help / Guide", key="btn_footer_help", use_container_width=True):
+            st.session_state["active_footer_view"] = "help" if st.session_state.get("active_footer_view") != "help" else None
+            st.rerun()
     with f_col2:
-        st.markdown('<div id="footer-about" class="orb-section-anchor"></div>', unsafe_allow_html=True)
-        About.render()
+        if st.button("About Us", key="btn_footer_about", use_container_width=True):
+            st.session_state["active_footer_view"] = "about" if st.session_state.get("active_footer_view") != "about" else None
+            st.rerun()
     with f_col3:
-        st.markdown('<div id="footer-contact" class="orb-section-anchor"></div>', unsafe_allow_html=True)
-        help.render()
+        if st.button("Contact Us", key="btn_footer_contact", use_container_width=True):
+            st.session_state["active_footer_view"] = "contact" if st.session_state.get("active_footer_view") != "contact" else None
+            st.rerun()
+    with f_col4:
+        st.caption("Click any button above to view guides, platform mission, or get in touch.")
+
+    active_view = st.session_state.get("active_footer_view")
+    if active_view:
+        with st.container(border=True):
+            c_head, c_close = st.columns([10, 2])
+            with c_close:
+                if st.button("✖ Close Panel", key="btn_close_footer_view", use_container_width=True):
+                    st.session_state["active_footer_view"] = None
+                    st.rerun()
+            with c_head:
+                if active_view == "help":
+                    KnowledgeBase.render()
+                elif active_view == "about":
+                    About.render()
+                elif active_view == "contact":
+                    contact_us.render()

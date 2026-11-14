@@ -33,6 +33,8 @@ EXPERIMENT_PROFILES = {
         "ref_o2": 21.0,
         "ref_flow": 0.5,
         "ref_p": 1.0,
+        "ref_area_m2": 0.25,
+        "base_threat": 72.0,
         "tol_g": 0.15,
         "tol_o2": 8.0,
         "tol_flow": 6.0,
@@ -65,6 +67,8 @@ EXPERIMENT_PROFILES = {
         "ref_o2": 23.5,
         "ref_flow": 20.0,
         "ref_p": 0.85,
+        "ref_area_m2": 1.2,
+        "base_threat": 82.0,
         "tol_g": 0.2,
         "tol_o2": 10.0,
         "tol_flow": 15.0,
@@ -96,6 +100,8 @@ EXPERIMENT_PROFILES = {
         "ref_o2": 21.0,
         "ref_flow": 10.0,
         "ref_p": 1.0,
+        "ref_area_m2": 0.6,
+        "base_threat": 76.0,
         "tol_g": 0.2,
         "tol_o2": 10.0,
         "tol_flow": 12.0,
@@ -127,6 +133,8 @@ EXPERIMENT_PROFILES = {
         "ref_o2": 30.0,
         "ref_flow": 8.0,
         "ref_p": 1.0,
+        "ref_area_m2": 0.5,
+        "base_threat": 78.0,
         "tol_g": 0.2,
         "tol_o2": 25.0,
         "tol_flow": 12.0,
@@ -158,6 +166,8 @@ EXPERIMENT_PROFILES = {
         "ref_o2": 21.0,
         "ref_flow": 12.0,
         "ref_p": 1.0,
+        "ref_area_m2": 0.4,
+        "base_threat": 68.0,
         "tol_g": 0.2,
         "tol_o2": 8.0,
         "tol_flow": 12.0,
@@ -189,6 +199,8 @@ EXPERIMENT_PROFILES = {
         "ref_o2": 21.0,
         "ref_flow": 3.0,
         "ref_p": 1.0,
+        "ref_area_m2": 0.8,
+        "base_threat": 74.0,
         "tol_g": 0.2,
         "tol_o2": 8.0,
         "tol_flow": 8.0,
@@ -220,6 +232,8 @@ EXPERIMENT_PROFILES = {
         "ref_o2": 20.0,
         "ref_flow": 0.0,
         "ref_p": 1.0,
+        "ref_area_m2": 0.35,
+        "base_threat": 70.0,
         "tol_g": 0.1,
         "tol_o2": 8.0,
         "tol_flow": 3.0,
@@ -251,6 +265,8 @@ EXPERIMENT_PROFILES = {
         "ref_o2": 23.0,
         "ref_flow": 5.0,
         "ref_p": 0.8,
+        "ref_area_m2": 0.7,
+        "base_threat": 80.0,
         "tol_g": 0.25,
         "tol_o2": 10.0,
         "tol_flow": 12.0,
@@ -282,6 +298,8 @@ EXPERIMENT_PROFILES = {
         "ref_o2": 21.0,
         "ref_flow": 10.0,
         "ref_p": 1.0,
+        "ref_area_m2": 1.0,
+        "base_threat": 44.0,
         "tol_g": 0.2,
         "tol_o2": 8.0,
         "tol_flow": 12.0,
@@ -313,6 +331,8 @@ EXPERIMENT_PROFILES = {
         "ref_o2": 21.0,
         "ref_flow": 15.0,
         "ref_p": 1.0,
+        "ref_area_m2": 1.1,
+        "base_threat": 84.0,
         "tol_g": 0.2,
         "tol_o2": 10.0,
         "tol_flow": 12.0,
@@ -577,7 +597,130 @@ def calc_psi62_pyrolysis(g, o2_pct, flow_cm_s):
     }
 
 
-def evaluate_combustion_state(fuel_type, g, o2_pct, flow_cm_s, pressure_atm=1.0):
+def evaluate_area_scaling(area_m2, g, o2_pct, flow_cm_s, exp_key=None):
+    area_val = max(0.05, float(area_m2))
+    confinement_factor = (1.0 / max(0.08, area_val)) ** 0.35
+    expansion_pyrolysis_factor = area_val ** 0.42
+
+    if area_val < 0.6:
+        area_regime = "Spatial Confinement / Contraction"
+        area_effect_summary = (
+            "Reduced area traps thermal energy, elevates wall radiative feedback and HCl/HF wall adsorption lag, "
+            "and promotes hot-to-cool flame shift while driving Exposure Factor EF toward 1.0."
+        )
+    elif area_val <= 1.8:
+        area_regime = "Nominal Compartment Geometry"
+        area_effect_summary = (
+            "Balanced radiant dissipation and exposed fuel area; baseline flow and diffusion detection timing."
+        )
+    else:
+        area_regime = "Spatial Expansion / Large Scale"
+        area_effect_summary = (
+            "Expanded surface increases solid pyrolysis flux and operational attack surface; in 0g, spherical "
+            "non-buoyant smoke dispersion decouples hazards from ceiling sensors."
+        )
+
+    conf_contrib = ((0.6 - area_val) / 0.6) * 0.45 if area_val < 0.6 else 0.0
+    exp_contrib = min(0.40, max(0.0, (area_val - 1.2) / 8.8) * 0.40)
+    ef_base = 0.38 + (o2_pct - 21.0) * 0.008
+    if exp_key in ("SAFFIRE", "SOFIE", "PSI62"):
+        ef_base += 0.08
+    elif exp_key == "DAFT":
+        ef_base -= 0.14
+    exposure_factor_EF = round(min(0.98, max(0.15, ef_base + conf_contrib + exp_contrib)), 3)
+
+    adsorption_lag = 6.5 * max(0.0, confinement_factor - 1.0)
+    dispersion_lag = (8.0 * expansion_pyrolysis_factor / max(0.5, flow_cm_s + 15.0 * g)) * (1.35 if g < 0.08 else 0.7)
+    detection_lag_s = round(max(1.0, 2.5 + adsorption_lag + dispersion_lag), 1)
+
+    return {
+        "area_m2": round(area_val, 2),
+        "area_regime": area_regime,
+        "confinement_factor": round(confinement_factor, 3),
+        "expansion_pyrolysis_factor": round(expansion_pyrolysis_factor, 3),
+        "exposure_factor_EF": exposure_factor_EF,
+        "detection_lag_s": detection_lag_s,
+        "area_effect_summary": area_effect_summary,
+    }
+
+
+def calculate_threat_metrics(exp_key, g, o2_pct, flow_cm_s, pressure_atm=1.0, area_m2=1.0, cool_flame=False, base_risk_score=None):
+    prof = EXPERIMENT_PROFILES[exp_key]
+    area_info = evaluate_area_scaling(area_m2, g, o2_pct, flow_cm_s, exp_key)
+
+    flex_m = calc_flex_droplet(g, o2_pct, flow_cm_s)
+    bass_m = calc_bass_deris_spread(g, o2_pct, flow_cm_s)
+
+    o2_contrib = min(30.0, max(-10.0, 1.35 * (o2_pct - 21.0)))
+    g_contrib = 8.5 if 0.10 <= g <= 0.38 else (3.0 if g < 0.05 else 0.0)
+    flow_contrib = 7.0 if 5.0 <= flow_cm_s <= 25.0 else (-4.0 if flow_cm_s < 1.5 and g < 0.05 else 1.5)
+    p_contrib = 2.5 * (pressure_atm - 1.0)
+    cool_penalty = 11.5 if cool_flame else 0.0
+
+    rate_contrib = min(
+        14.0,
+        2.0 * math.log1p(flex_m["Spalding B_T"])
+        + 1.4 * flex_m["Burning Constant K (mm²/s)"]
+        + 0.35 * bass_m["Thin Spread V_f,thin (mm/s)"],
+    )
+
+    conf_penalty = min(16.0, 11.5 * max(0.0, area_info["confinement_factor"] - 1.05))
+    exp_penalty = min(16.0, 7.5 * max(0.0, area_info["expansion_pyrolysis_factor"] - 1.25))
+    if exp_key in ("SAFFIRE", "SOFIE", "BASS", "PSI62"):
+        exp_penalty *= 1.15
+    elif exp_key in ("FLEX", "ACME", "SAME"):
+        conf_penalty *= 1.15
+
+    raw_physics_score = (
+        0.55 * prof["base_threat"]
+        + 0.45 * 45.0
+        + 0.45 * o2_contrib
+        + g_contrib
+        + flow_contrib
+        + p_contrib
+        + cool_penalty
+        + 0.5 * rate_contrib
+        + conf_penalty
+        + exp_penalty
+    )
+
+    if base_risk_score is not None:
+        anchored_base = float(base_risk_score) * 100.0
+        threat_score = 0.58 * anchored_base + 0.42 * raw_physics_score
+    else:
+        threat_score = raw_physics_score
+
+    threat_score = round(min(99.5, max(5.0, threat_score)), 1)
+
+    if threat_score >= 80.0:
+        threat_tier = "CRITICAL"
+    elif threat_score >= 65.0:
+        threat_tier = "HIGH"
+    elif threat_score >= 45.0:
+        threat_tier = "MODERATE"
+    else:
+        threat_tier = "LOW"
+
+    s_norm = threat_score / 100.0
+    F_t = min(0.95, max(0.02, 0.12 + 0.75 * (s_norm ** 1.4)))
+    f_t = max(0.01, 0.85 * s_norm * (1.0 - s_norm * 0.45))
+    hazard_rate_h = round(f_t / max(0.05, 1.0 - F_t), 3)
+    aro = round(0.15 + 1.85 * (s_norm ** 1.2) * (1.0 + 0.25 * max(0.0, float(area_m2) - 1.0)), 3)
+    ale_norm = round(area_info["exposure_factor_EF"] * aro, 3)
+
+    return {
+        "threat_score": threat_score,
+        "threat_tier": threat_tier,
+        "hazard_rate_h": hazard_rate_h,
+        "exposure_factor_EF": area_info["exposure_factor_EF"],
+        "aro_index": aro,
+        "ale_norm": ale_norm,
+        "detection_lag_s": area_info["detection_lag_s"],
+        "area_scaling": area_info,
+    }
+
+
+def evaluate_combustion_state(fuel_type, g, o2_pct, flow_cm_s, pressure_atm=1.0, area_m2=1.0):
     exp_key, surety_pct, sorted_scores = detect_experiment_category(
         fuel_type, g, o2_pct, flow_cm_s, pressure_atm
     )
@@ -611,10 +754,19 @@ def evaluate_combustion_state(fuel_type, g, o2_pct, flow_cm_s, pressure_atm=1.0)
         is_cool_flame = True
     elif exp_key == "SOFIE" and g < 0.05 and flow_cm_s < 3.0:
         is_cool_flame = True
+    elif area_m2 < 0.35 and g < 0.08 and exp_key in ("FLEX", "ACME", "SOFIE", "BASS"):
+        is_cool_flame = True
 
     is_extinguished = False
     if exp_key in ("SOFIE", "BASS") and g < 0.04 and flow_cm_s < 1.0 and o2_pct < 18.5:
         is_extinguished = True
+
+    threat = calculate_threat_metrics(
+        exp_key, g, o2_pct, flow_cm_s, pressure_atm=pressure_atm, area_m2=area_m2, cool_flame=is_cool_flame
+    )
+    area_scaling = threat["area_scaling"]
+    metrics["Threat Score (0-100)"] = f"{threat['threat_score']} ({threat['threat_tier']})"
+    metrics["Exposure Factor EF"] = threat["exposure_factor_EF"]
 
     buoyancy_stretch = 1.0 + (1.8 * g)
     size_factor = (o2_pct / 21.0) * 0.9
@@ -637,6 +789,13 @@ def evaluate_combustion_state(fuel_type, g, o2_pct, flow_cm_s, pressure_atm=1.0)
         buoyancy_stretch = 1.0 + (0.9 * g)
         size_factor *= 1.15
         temp_scale *= 0.68
+
+    if area_m2 < 0.6:
+        temp_scale *= 1.0 + 0.22 * (area_scaling["confinement_factor"] - 1.0)
+        size_factor *= max(0.65, 0.95 - 0.18 * (1.0 - float(area_m2)))
+    elif area_m2 > 1.0:
+        size_factor *= min(1.35, 1.0 + 0.12 * (area_scaling["expansion_pyrolysis_factor"] - 1.0))
+        temp_scale *= min(1.25, 1.0 + 0.08 * (area_scaling["expansion_pyrolysis_factor"] - 1.0))
 
     if is_cool_flame:
         temp_scale *= 0.62
@@ -674,6 +833,8 @@ def evaluate_combustion_state(fuel_type, g, o2_pct, flow_cm_s, pressure_atm=1.0)
         "prevention": prof["prevention"],
         "detection": prof["detection"],
         "suppression": prof["suppression"],
+        "threat": threat,
+        "area_scaling": area_scaling,
         "morphology_params": {
             "buoyancy_stretch": buoyancy_stretch,
             "size_factor": max(0.35, size_factor),
@@ -684,12 +845,13 @@ def evaluate_combustion_state(fuel_type, g, o2_pct, flow_cm_s, pressure_atm=1.0)
     }
 
 
-def match_catalog_record(exp_record):
+def match_catalog_record(exp_record, area_m2=None):
     mission = (exp_record.get("mission") or "").upper()
     fuel_name = exp_record.get("fuel_name") or ""
     g = float(exp_record.get("gravity_g", 0.0))
     o2 = float(exp_record.get("oxygen_pct", 21.0))
     p = float(exp_record.get("pressure_atm", 1.0))
+    flow = float(exp_record.get("flow_cm_s", 5.0))
 
     if "FLEX" in mission:
         key = "FLEX"
@@ -706,14 +868,36 @@ def match_catalog_record(exp_record):
     elif "DAFT" in mission:
         key = "DAFT"
     else:
-        key, _, _ = detect_experiment_category(fuel_name, g, o2, 5.0, p)
+        key, _, _ = detect_experiment_category(fuel_name, g, o2, flow, p)
 
-    _, surety_pct, _ = detect_experiment_category(fuel_name, g, o2, 5.0, p)
+    _, surety_pct, _ = detect_experiment_category(fuel_name, g, o2, flow, p)
     surety_pct = max(surety_pct, 92.5)
     prof = EXPERIMENT_PROFILES[key]
+
+    resolved_area = float(area_m2) if area_m2 is not None else float(exp_record.get("area_m2") or prof["ref_area_m2"])
+    threat = calculate_threat_metrics(
+        key,
+        g,
+        o2,
+        flow,
+        pressure_atm=p,
+        area_m2=resolved_area,
+        cool_flame=bool(exp_record.get("cool_flame_observed")),
+        base_risk_score=exp_record.get("risk_score"),
+    )
+    area_info = threat["area_scaling"]
+
     return {
         "code": prof["code"],
         "equation_name": prof["equation_name"],
         "equation_latex": prof["equation_latex"],
         "surety_pct": round(surety_pct, 1),
+        "threat_score": threat["threat_score"],
+        "threat_tier": threat["threat_tier"],
+        "hazard_rate_h": threat["hazard_rate_h"],
+        "ale_norm": threat["ale_norm"],
+        "area_regime": area_info["area_regime"],
+        "area_effect_summary": area_info["area_effect_summary"],
+        "exposure_factor_EF": threat["exposure_factor_EF"],
+        "detection_lag_s": threat["detection_lag_s"],
     }

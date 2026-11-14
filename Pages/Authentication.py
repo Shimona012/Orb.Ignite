@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 from supabase import create_client
 
-
+#need to add common login, and a basic admin login-logout system.
 def _get_supabase_client():
     url = None
     key = None
