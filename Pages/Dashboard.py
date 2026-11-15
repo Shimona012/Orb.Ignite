@@ -4,6 +4,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import os
 import json
+import base64
 import mission_catalog
 import flame_lab
 import fire_predictor
@@ -36,10 +37,29 @@ def show_contact_dialog():
     contact_us.render()
 
 
+@st.cache_data(show_spinner=False)
+def _load_ms_madi_font_css() -> str:
+    font_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Fonts", "MsMadi-Regular.ttf")
+    if not os.path.exists(font_path):
+        return ""
+    with open(font_path, "rb") as f:
+        b64_font = base64.b64encode(f.read()).decode("ascii")
+    src = f"url('data:font/ttf;base64,{b64_font}') format('truetype')"
+    return (
+        f"@font-face {{ font-family: 'Ms Madi'; src: {src}; font-weight: 100 900; font-style: normal; font-display: swap; }}\n"
+        f"@font-face {{ font-family: 'Ms.Maddi'; src: {src}; font-weight: 100 900; font-style: normal; font-display: swap; }}"
+    )
+
+
+_ms_madi_font_css = _load_ms_madi_font_css()
+if _ms_madi_font_css:
+    st.markdown(f"<style>{_ms_madi_font_css}</style>", unsafe_allow_html=True)
+
+
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;1,400&family=Inter:wght@300..800&family=Public+Sans:ital,wght@0,300..900;1,300..900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;1,400&family=Inter:wght@300..800&family=Ms+Madi&family=Public+Sans:ital,wght@0,300..900;1,300..900&display=swap');
 
     html {
         scroll-behavior: smooth;
@@ -56,12 +76,36 @@ st.markdown(
 
     [data-testid="stSidebar"],
     section[data-testid="stSidebar"],
-    [data-testid="stSidebarContent"],
-    div[data-testid="stSidebarUserContent"] {
+    [data-testid="stSidebarContent"] {
         overflow-y: auto !important;
         max-height: 100vh !important;
+        max-height: 100dvh !important;
         overscroll-behavior: contain !important;
         -webkit-overflow-scrolling: touch !important;
+    }
+
+    [data-testid="stSidebarContent"] {
+        height: 100vh !important;
+        height: 100dvh !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    [data-testid="stSidebarHeader"] {
+        flex: 0 0 auto !important;
+    }
+    [data-testid="stSidebarContent"] > div:not([data-testid="stSidebarHeader"]):not([data-testid="stSidebarUserContent"]),
+    div[data-testid="stSidebarUserContent"],
+    div[data-testid="stSidebarUserContent"] > div,
+    div[data-testid="stSidebarUserContent"] > div > [data-testid="stVerticalBlock"],
+    div[data-testid="stSidebarUserContent"] > [data-testid="stVerticalBlock"] {
+        flex: 1 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    div[data-testid="stSidebarUserContent"] {
+        overflow: visible !important;
+        max-height: none !important;
+        padding-bottom: 1rem !important;
     }
 
     [data-testid="stSidebarContent"]::-webkit-scrollbar {
@@ -70,9 +114,6 @@ st.markdown(
     [data-testid="stSidebarContent"]::-webkit-scrollbar-thumb {
         background: rgba(255, 255, 255, 0.2);
         border-radius: 3px;
-    }
-    [data-testid="stSidebarContent"] > div:first-child {
-        padding-bottom: 4rem !important;
     }
 
     .block-container {
@@ -112,7 +153,10 @@ st.markdown(
         padding-right: 3.5rem !important;
     }
     [data-testid="stAppDeployButton"],
-    [data-testid="stDecoration"] {
+    [data-testid="stDecoration"],
+    [data-testid="InputInstructions"],
+    .stInputInstructions,
+    div[data-testid="InputInstructions"] {
         display: none !important;
     }
     a, a:visited, a:hover, a:active {
@@ -153,57 +197,100 @@ st.markdown(
         color: #475569 !important;
     }
 
-    /* All Containers, Expanders, and Cards in Light Mode */
     [data-theme="light"] .stApp [data-testid="stExpander"],
+    .stApp[data-theme="light"] [data-testid="stExpander"],
+    [data-theme="light"] [data-testid="stExpander"],
     [data-theme="light"] .stApp [data-testid="stExpander"] details,
+    .stApp[data-theme="light"] [data-testid="stExpander"] details,
+    [data-theme="light"] [data-testid="stExpander"] details,
     [data-theme="light"] .stApp [data-testid="stExpander"] summary,
+    .stApp[data-theme="light"] [data-testid="stExpander"] summary,
+    [data-theme="light"] [data-testid="stExpander"] summary,
     [data-theme="light"] .stApp [data-testid="stExpander"] [data-testid="stExpanderDetails"],
+    .stApp[data-theme="light"] [data-testid="stExpander"] [data-testid="stExpanderDetails"],
+    [data-theme="light"] [data-testid="stExpander"] [data-testid="stExpanderDetails"],
     [data-theme="light"] .stApp [data-testid="stVerticalBlockBorderWrapper"],
+    .stApp[data-theme="light"] [data-testid="stVerticalBlockBorderWrapper"],
     [data-theme="light"] .stApp [data-testid="stVerticalBlockBorderWrapper"] > div,
+    .stApp[data-theme="light"] [data-testid="stVerticalBlockBorderWrapper"] > div,
     [data-theme="light"] .stApp [data-testid="stForm"],
-    [data-theme="light"] .stApp [data-testid="stForm"] > div {
+    .stApp[data-theme="light"] [data-testid="stForm"],
+    [data-theme="light"] .stApp [data-testid="stForm"] > div,
+    .stApp[data-theme="light"] [data-testid="stForm"] > div {
         background-color: #FFFFFF !important;
         background: #FFFFFF !important;
         border-color: rgba(15, 23, 42, 0.16) !important;
         color: #0F172A !important;
     }
     [data-theme="light"] .stApp [data-testid="stExpander"] summary:hover,
-    [data-theme="light"] .stApp [data-testid="stExpander"] summary:focus {
+    .stApp[data-theme="light"] [data-testid="stExpander"] summary:hover,
+    [data-theme="light"] [data-testid="stExpander"] summary:hover,
+    [data-theme="light"] .stApp [data-testid="stExpander"] summary:focus,
+    .stApp[data-theme="light"] [data-testid="stExpander"] summary:focus,
+    [data-theme="light"] [data-testid="stExpander"] summary:focus {
         background-color: #F8FAFC !important;
         background: #F8FAFC !important;
     }
     [data-theme="light"] .stApp [data-testid="stExpander"] summary,
+    .stApp[data-theme="light"] [data-testid="stExpander"] summary,
+    [data-theme="light"] [data-testid="stExpander"] summary,
     [data-theme="light"] .stApp [data-testid="stExpander"] summary *,
+    .stApp[data-theme="light"] [data-testid="stExpander"] summary *,
+    [data-theme="light"] [data-testid="stExpander"] summary *,
     [data-theme="light"] .stApp [data-testid="stExpander"] summary p,
+    .stApp[data-theme="light"] [data-testid="stExpander"] summary p,
+    [data-theme="light"] [data-testid="stExpander"] summary p,
     [data-theme="light"] .stApp [data-testid="stExpander"] summary span,
-    [data-theme="light"] .stApp [data-testid="stExpander"] summary svg {
+    .stApp[data-theme="light"] [data-testid="stExpander"] summary span,
+    [data-theme="light"] [data-testid="stExpander"] summary span,
+    [data-theme="light"] .stApp [data-testid="stExpander"] summary svg,
+    .stApp[data-theme="light"] [data-testid="stExpander"] summary svg,
+    [data-theme="light"] [data-testid="stExpander"] summary svg {
         color: #0F172A !important;
         fill: #0F172A !important;
     }
 
-    /* Sidebar in Light Mode */
     [data-theme="light"] .stApp [data-testid="stSidebar"],
+    .stApp[data-theme="light"] [data-testid="stSidebar"],
     [data-theme="light"] [data-testid="stSidebar"] {
         background-color: #F1F5F9 !important;
         color: #0F172A !important;
     }
-    [data-theme="light"] [data-testid="stSidebar"] hr {
+    [data-theme="light"] [data-testid="stSidebar"] hr,
+    .stApp[data-theme="light"] [data-testid="stSidebar"] hr {
         border-color: rgba(15, 23, 42, 0.14) !important;
     }
 
-    /* All Inputs, Textareas, and Selects in Light Mode */
     [data-theme="light"] .stApp input,
+    .stApp[data-theme="light"] input,
+    [data-theme="light"] input,
     [data-theme="light"] .stApp textarea,
+    .stApp[data-theme="light"] textarea,
+    [data-theme="light"] textarea,
     [data-theme="light"] .stApp [data-baseweb="input"],
+    .stApp[data-theme="light"] [data-baseweb="input"],
     [data-theme="light"] .stApp [data-baseweb="input"] > div,
+    .stApp[data-theme="light"] [data-baseweb="input"] > div,
     [data-theme="light"] .stApp [data-baseweb="base-input"],
+    .stApp[data-theme="light"] [data-baseweb="base-input"],
     [data-theme="light"] .stApp [data-baseweb="base-input"] > input,
+    .stApp[data-theme="light"] [data-baseweb="base-input"] > input,
     [data-theme="light"] .stApp [data-testid="stTextInputRootElement"],
+    .stApp[data-theme="light"] [data-testid="stTextInputRootElement"],
+    [data-theme="light"] [data-testid="stTextInputRootElement"],
     [data-theme="light"] .stApp [data-testid="stTextInputRootElement"] > div,
+    .stApp[data-theme="light"] [data-testid="stTextInputRootElement"] > div,
+    [data-theme="light"] .stApp [data-testid="stTextInputField"],
+    .stApp[data-theme="light"] [data-testid="stTextInputField"],
+    [data-theme="light"] [data-testid="stTextInputField"],
     [data-theme="light"] .stApp [data-testid="stNumberInputContainer"],
+    .stApp[data-theme="light"] [data-testid="stNumberInputContainer"],
     [data-theme="light"] .stApp [data-testid="stNumberInputContainer"] > div,
+    .stApp[data-theme="light"] [data-testid="stNumberInputContainer"] > div,
     [data-theme="light"] .stApp [data-baseweb="select"],
-    [data-theme="light"] .stApp [data-baseweb="select"] > div {
+    .stApp[data-theme="light"] [data-baseweb="select"],
+    [data-theme="light"] .stApp [data-baseweb="select"] > div,
+    .stApp[data-theme="light"] [data-baseweb="select"] > div {
         background-color: #FFFFFF !important;
         background: #FFFFFF !important;
         color: #0F172A !important;
@@ -211,7 +298,9 @@ st.markdown(
         -webkit-text-fill-color: #0F172A !important;
     }
     [data-theme="light"] .stApp input::placeholder,
-    [data-theme="light"] .stApp textarea::placeholder {
+    .stApp[data-theme="light"] input::placeholder,
+    [data-theme="light"] .stApp textarea::placeholder,
+    .stApp[data-theme="light"] textarea::placeholder {
         color: #64748B !important;
         -webkit-text-fill-color: #64748B !important;
         opacity: 0.85 !important;
@@ -224,12 +313,14 @@ st.markdown(
         fill: currentColor !important;
     }
 
-    /* Primary buttons (e.g. Sign In as Researcher, Plot, Run Fire Prediction) */
     [data-theme="light"] .stApp button[kind="primary"],
     [data-theme="light"] .stApp button[kind="primaryFormSubmit"],
     [data-theme="light"] .stApp [data-testid="stBaseButton-primary"],
     [data-theme="light"] .stApp [data-testid="baseButton-primary"],
-    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] > button {
+    .stApp[data-theme="light"] button[kind="primary"],
+    .stApp[data-theme="light"] button[kind="primaryFormSubmit"],
+    .stApp[data-theme="light"] [data-testid="stBaseButton-primary"],
+    .stApp[data-theme="light"] [data-testid="baseButton-primary"] {
         background-color: #EA580C !important;
         background: linear-gradient(180deg, #EA580C 0%, #C2410C 100%) !important;
         color: #FFFFFF !important;
@@ -244,25 +335,42 @@ st.markdown(
     [data-theme="light"] .stApp [data-testid="stBaseButton-primary"] p,
     [data-theme="light"] .stApp [data-testid="baseButton-primary"] *,
     [data-theme="light"] .stApp [data-testid="baseButton-primary"] p,
-    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] > button *,
-    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] > button p {
+    .stApp[data-theme="light"] button[kind="primary"] *,
+    .stApp[data-theme="light"] button[kind="primary"] p,
+    .stApp[data-theme="light"] button[kind="primaryFormSubmit"] *,
+    .stApp[data-theme="light"] button[kind="primaryFormSubmit"] p,
+    .stApp[data-theme="light"] [data-testid="stBaseButton-primary"] *,
+    .stApp[data-theme="light"] [data-testid="stBaseButton-primary"] p,
+    .stApp[data-theme="light"] [data-testid="baseButton-primary"] *,
+    .stApp[data-theme="light"] [data-testid="baseButton-primary"] p {
         color: #FFFFFF !important;
         -webkit-text-fill-color: #FFFFFF !important;
     }
     [data-theme="light"] .stApp button[kind="primary"]:hover,
     [data-theme="light"] .stApp [data-testid="stBaseButton-primary"]:hover,
     [data-theme="light"] .stApp [data-testid="baseButton-primary"]:hover,
-    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] > button:hover {
+    .stApp[data-theme="light"] button[kind="primary"]:hover,
+    .stApp[data-theme="light"] [data-testid="stBaseButton-primary"]:hover,
+    .stApp[data-theme="light"] [data-testid="baseButton-primary"]:hover {
         background-color: #C2410C !important;
         background: #C2410C !important;
         color: #FFFFFF !important;
     }
 
-    /* Secondary buttons (e.g. Plot suggestion pills, Dialog triggers) */
     [data-theme="light"] .stApp button[kind="secondary"],
     [data-theme="light"] .stApp [data-testid="stBaseButton-secondary"],
     [data-theme="light"] .stApp [data-testid="baseButton-secondary"],
-    [data-theme="light"] .stApp [data-testid="stPopover"] > button {
+    [data-theme="light"] .stApp [data-testid="stPopover"] > button,
+    .stApp[data-theme="light"] button[kind="secondary"],
+    .stApp[data-theme="light"] [data-testid="stBaseButton-secondary"],
+    .stApp[data-theme="light"] [data-testid="baseButton-secondary"],
+    .stApp[data-theme="light"] [data-testid="stPopover"] > button,
+    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] button,
+    .stApp[data-theme="light"] [data-testid="stFormSubmitButton"] button,
+    [data-theme="light"] [data-testid="stFormSubmitButton"] button,
+    [data-theme="light"] .stApp button[kind="secondaryFormSubmit"],
+    .stApp[data-theme="light"] button[kind="secondaryFormSubmit"],
+    [data-theme="light"] button[kind="secondaryFormSubmit"] {
         background-color: #FFFFFF !important;
         background: #FFFFFF !important;
         color: #0F172A !important;
@@ -273,13 +381,31 @@ st.markdown(
     [data-theme="light"] .stApp [data-testid="stBaseButton-secondary"] *,
     [data-theme="light"] .stApp [data-testid="stBaseButton-secondary"] p,
     [data-theme="light"] .stApp [data-testid="baseButton-secondary"] *,
-    [data-theme="light"] .stApp [data-testid="baseButton-secondary"] p {
+    [data-theme="light"] .stApp [data-testid="baseButton-secondary"] p,
+    .stApp[data-theme="light"] button[kind="secondary"] *,
+    .stApp[data-theme="light"] button[kind="secondary"] p,
+    .stApp[data-theme="light"] [data-testid="stBaseButton-secondary"] *,
+    .stApp[data-theme="light"] [data-testid="stBaseButton-secondary"] p,
+    .stApp[data-theme="light"] [data-testid="baseButton-secondary"] *,
+    .stApp[data-theme="light"] [data-testid="baseButton-secondary"] p,
+    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] button *,
+    .stApp[data-theme="light"] [data-testid="stFormSubmitButton"] button *,
+    [data-theme="light"] [data-testid="stFormSubmitButton"] button *,
+    [data-theme="light"] .stApp button[kind="secondaryFormSubmit"] *,
+    .stApp[data-theme="light"] button[kind="secondaryFormSubmit"] *,
+    [data-theme="light"] button[kind="secondaryFormSubmit"] * {
         color: #0F172A !important;
         -webkit-text-fill-color: #0F172A !important;
     }
     [data-theme="light"] .stApp button[kind="secondary"]:hover,
     [data-theme="light"] .stApp [data-testid="stBaseButton-secondary"]:hover,
-    [data-theme="light"] .stApp [data-testid="baseButton-secondary"]:hover {
+    [data-theme="light"] .stApp [data-testid="baseButton-secondary"]:hover,
+    .stApp[data-theme="light"] button[kind="secondary"]:hover,
+    .stApp[data-theme="light"] [data-testid="stBaseButton-secondary"]:hover,
+    .stApp[data-theme="light"] [data-testid="baseButton-secondary"]:hover,
+    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] button:hover,
+    .stApp[data-theme="light"] [data-testid="stFormSubmitButton"] button:hover,
+    [data-theme="light"] [data-testid="stFormSubmitButton"] button:hover {
         background-color: #F8FAFC !important;
         border-color: #EA580C !important;
         color: #EA580C !important;
@@ -555,7 +681,7 @@ st.markdown(
         }
     }
 
-    /* Sidebar Stars Constellation (Full Sidebar Width) */
+    
     .orb-sidebar-stars-wrap {
         width: 100%;
         padding: 0.85rem 0 1.5rem 0;
@@ -608,7 +734,7 @@ st.markdown(
     .orb-star.star-9 { --base-rot: 15deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(15deg); margin-top: 2px; }
     .orb-star.star-10 { --base-rot: -24deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-24deg); margin-top: 0px; }
 
-    /* Stars "go in" (collapse inward) when pulled down or tucking */
+    
     .orb-cord-pulling .orb-star,
     .orb-stars-tuck .orb-star,
     body.orb-cord-pulling .orb-star,
@@ -646,6 +772,49 @@ st.markdown(
         color: #334155 !important;
         filter: none !important;
         opacity: 0.82;
+    }
+
+    
+    [data-testid="stElementContainer"]:has(.orb-sidebar-sig),
+    .element-container:has(.orb-sidebar-sig),
+    [data-testid="stLayoutWrapper"]:has(.orb-sidebar-sig) {
+        margin-top: auto !important;
+        width: 100% !important;
+    }
+    .orb-sidebar-sig {
+        font-family: 'Ms Madi', 'Ms.Maddi', cursive !important;
+        font-size: clamp(1.42rem, 1.85vw, 1.72rem) !important;
+        font-weight: 300 !important;
+        font-style: normal !important;
+        -webkit-text-stroke: 0px transparent !important;
+        -webkit-font-smoothing: antialiased !important;
+        -moz-osx-font-smoothing: grayscale;
+        letter-spacing: 0.02em;
+        line-height: 1.25;
+        text-align: center;
+        width: 100%;
+        padding: 2rem 0 0.75rem 0;
+        user-select: none;
+        white-space: nowrap;
+        color: #FFFFFF !important;
+        text-shadow: 0 0 8px rgba(255, 255, 255, 0.45), 0 0 16px rgba(226, 232, 240, 0.22) !important;
+        opacity: 0.94;
+    }
+    [data-theme="dark"] .orb-sidebar-sig,
+    .stApp[data-theme="dark"] .orb-sidebar-sig,
+    [data-base-theme="dark"] .orb-sidebar-sig,
+    [data-theme="dark"] [data-testid="stSidebar"] .orb-sidebar-sig {
+        color: #FFFFFF !important;
+        text-shadow: 0 0 8px rgba(255, 255, 255, 0.45), 0 0 16px rgba(226, 232, 240, 0.22) !important;
+        opacity: 0.94;
+    }
+    [data-theme="light"] .orb-sidebar-sig,
+    .stApp[data-theme="light"] .orb-sidebar-sig,
+    [data-base-theme="light"] .orb-sidebar-sig,
+    [data-theme="light"] [data-testid="stSidebar"] .orb-sidebar-sig {
+        color: #0F172A !important;
+        text-shadow: 0 0 7px rgba(15, 23, 42, 0.24), 0 0 14px rgba(51, 65, 85, 0.14) !important;
+        opacity: 0.92;
     }
     </style>
     """,
@@ -703,6 +872,7 @@ with st.sidebar:
     )
     st.divider()
     Authentication.render_sidebar_auth()
+    st.markdown('<div class="orb-sidebar-sig">Jugaadnauts </div>', unsafe_allow_html=True)
 
 ambience.render_ambience(scenario_preset)
 
