@@ -1,0 +1,2981 @@
+{
+  "generated_at_utc": "2026-11-15T08:00:54.099298+00:00",
+  "data_audit": {
+    "flex": {
+      "raw_rows": 274,
+      "clean_rows": 273,
+      "dropped_zero_pressure_rows": 1,
+      "missing_counts": {
+        "char_scale_mm": 12,
+        "d_ext_mm": 64,
+        "K_mm2_s": 16,
+        "burn_duration_s": 6
+      }
+    },
+    "cfig": {
+      "normal_rows": 179,
+      "inverse_valid_rows": 154,
+      "combined_rows": 333,
+      "cool_flame_rows": 9,
+      "colour_labeled_rows": 120
+    },
+    "spice": {
+      "raw_rows": 469,
+      "deduplicated_runs": 116
+    },
+    "bass2": {
+      "raw_rows": 129,
+      "dropped_o2_sensor_glitches": 5,
+      "valid_O2_rows": 122,
+      "valid_CO2_rows": 121,
+      "valid_CO_rows": 118
+    }
+  },
+  "models": {
+    "model1a_persistence": {
+      "task_name": "Model 1A: Burn Persistence Stage",
+      "n_total": 716,
+      "class_distribution": {
+        "Sustained_Burn": 611,
+        "No_Sustained_Burn": 62,
+        "Brief_Flash": 43
+      },
+      "split_sizes": {
+        "train": 500,
+        "val": 108,
+        "test": 108
+      },
+      "num_cols": [
+        "X_O2",
+        "X_fuel_stream",
+        "X_CO2",
+        "X_He",
+        "pressure_atm",
+        "o2_partial_pressure_atm",
+        "inert_diluent_sum",
+        "char_scale_mm",
+        "flow_cm_s",
+        "fuel_flow_mg_s",
+        "mw_g_mol",
+        "boiling_point_K",
+        "heat_of_combustion_MJ_kg",
+        "stoich_o2_mass_ratio",
+        "sooting_propensity",
+        "cool_flame_capable"
+      ],
+      "cat_cols": [
+        "experiment_family",
+        "fuel_base",
+        "fuel_phase"
+      ],
+      "classes": [
+        "Brief_Flash",
+        "No_Sustained_Burn",
+        "Sustained_Burn"
+      ],
+      "best_xgb_params": {
+        "max_depth": 3,
+        "learning_rate": 0.08,
+        "n_estimators": 300
+      },
+      "cv5_trainval_macro_f1_mean": 0.6357,
+      "cv5_trainval_macro_f1_std": 0.1047,
+      "benchmark_comparison": {
+        "Naive_Baseline": {
+          "val": {
+            "macro_f1": 0.3067,
+            "weighted_f1": 0.7837,
+            "balanced_accuracy": 0.3333,
+            "log_loss": 5.3398,
+            "macro_f1_ci95": [
+              0.2936,
+              0.3172
+            ],
+            "balanced_acc_ci95": [
+              0.3333,
+              0.3333
+            ],
+            "confusion_matrix": [
+              [
+                0,
+                0,
+                6
+              ],
+              [
+                0,
+                0,
+                10
+              ],
+              [
+                0,
+                0,
+                92
+              ]
+            ],
+            "class_names": [
+              "Brief_Flash",
+              "No_Sustained_Burn",
+              "Sustained_Burn"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.3067,
+            "weighted_f1": 0.7837,
+            "balanced_accuracy": 0.3333,
+            "log_loss": 5.3398,
+            "macro_f1_ci95": [
+              0.2926,
+              0.3188
+            ],
+            "balanced_acc_ci95": [
+              0.3333,
+              0.3333
+            ],
+            "confusion_matrix": [
+              [
+                0,
+                0,
+                7
+              ],
+              [
+                0,
+                0,
+                9
+              ],
+              [
+                0,
+                0,
+                92
+              ]
+            ],
+            "class_names": [
+              "Brief_Flash",
+              "No_Sustained_Burn",
+              "Sustained_Burn"
+            ]
+          }
+        },
+        "Linear_Baseline": {
+          "val": {
+            "macro_f1": 0.5543,
+            "weighted_f1": 0.782,
+            "balanced_accuracy": 0.7316,
+            "log_loss": 0.6771,
+            "macro_f1_ci95": [
+              0.4378,
+              0.6788
+            ],
+            "balanced_acc_ci95": [
+              0.5657,
+              0.8878
+            ],
+            "confusion_matrix": [
+              [
+                4,
+                2,
+                0
+              ],
+              [
+                2,
+                8,
+                0
+              ],
+              [
+                13,
+                12,
+                67
+              ]
+            ],
+            "class_names": [
+              "Brief_Flash",
+              "No_Sustained_Burn",
+              "Sustained_Burn"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.618,
+            "weighted_f1": 0.8122,
+            "balanced_accuracy": 0.7916,
+            "log_loss": 0.5354,
+            "macro_f1_ci95": [
+              0.4806,
+              0.7335
+            ],
+            "balanced_acc_ci95": [
+              0.6095,
+              0.923
+            ],
+            "confusion_matrix": [
+              [
+                5,
+                2,
+                0
+              ],
+              [
+                0,
+                8,
+                1
+              ],
+              [
+                12,
+                9,
+                71
+              ]
+            ],
+            "class_names": [
+              "Brief_Flash",
+              "No_Sustained_Burn",
+              "Sustained_Burn"
+            ]
+          }
+        },
+        "RandomForest": {
+          "val": {
+            "macro_f1": 0.6659,
+            "weighted_f1": 0.8771,
+            "balanced_accuracy": 0.7601,
+            "log_loss": 0.6743,
+            "macro_f1_ci95": [
+              0.5306,
+              0.7986
+            ],
+            "balanced_acc_ci95": [
+              0.605,
+              0.9283
+            ],
+            "confusion_matrix": [
+              [
+                3,
+                2,
+                1
+              ],
+              [
+                1,
+                9,
+                0
+              ],
+              [
+                5,
+                6,
+                81
+              ]
+            ],
+            "class_names": [
+              "Brief_Flash",
+              "No_Sustained_Burn",
+              "Sustained_Burn"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.7055,
+            "weighted_f1": 0.897,
+            "balanced_accuracy": 0.7577,
+            "log_loss": 0.6504,
+            "macro_f1_ci95": [
+              0.5282,
+              0.8273
+            ],
+            "balanced_acc_ci95": [
+              0.5725,
+              0.9176
+            ],
+            "confusion_matrix": [
+              [
+                4,
+                2,
+                1
+              ],
+              [
+                1,
+                7,
+                1
+              ],
+              [
+                4,
+                3,
+                85
+              ]
+            ],
+            "class_names": [
+              "Brief_Flash",
+              "No_Sustained_Burn",
+              "Sustained_Burn"
+            ]
+          }
+        },
+        "XGBoost": {
+          "val": {
+            "macro_f1": 0.7559,
+            "weighted_f1": 0.9281,
+            "balanced_accuracy": 0.7855,
+            "log_loss": 0.2047,
+            "macro_f1_ci95": [
+              0.5901,
+              0.8831
+            ],
+            "balanced_acc_ci95": [
+              0.6399,
+              0.9491
+            ],
+            "confusion_matrix": [
+              [
+                3,
+                2,
+                1
+              ],
+              [
+                1,
+                9,
+                0
+              ],
+              [
+                1,
+                3,
+                88
+              ]
+            ],
+            "class_names": [
+              "Brief_Flash",
+              "No_Sustained_Burn",
+              "Sustained_Burn"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.7381,
+            "weighted_f1": 0.9166,
+            "balanced_accuracy": 0.7352,
+            "log_loss": 0.2784,
+            "macro_f1_ci95": [
+              0.5355,
+              0.8689
+            ],
+            "balanced_acc_ci95": [
+              0.5633,
+              0.8895
+            ],
+            "confusion_matrix": [
+              [
+                4,
+                2,
+                1
+              ],
+              [
+                1,
+                6,
+                2
+              ],
+              [
+                1,
+                2,
+                89
+              ]
+            ],
+            "class_names": [
+              "Brief_Flash",
+              "No_Sustained_Burn",
+              "Sustained_Burn"
+            ]
+          }
+        }
+      },
+      "final_test_metrics": {
+        "macro_f1": 0.7989,
+        "weighted_f1": 0.9305,
+        "balanced_accuracy": 0.753,
+        "log_loss": 0.2151,
+        "macro_f1_ci95": [
+          0.6126,
+          0.928
+        ],
+        "balanced_acc_ci95": [
+          0.5759,
+          0.9096
+        ],
+        "confusion_matrix": [
+          [
+            5,
+            0,
+            2
+          ],
+          [
+            1,
+            5,
+            3
+          ],
+          [
+            1,
+            0,
+            91
+          ]
+        ],
+        "class_names": [
+          "Brief_Flash",
+          "No_Sustained_Burn",
+          "Sustained_Burn"
+        ]
+      }
+    },
+    "model1b_burn_duration": {
+      "task_name": "Model 1B: Burn Duration (s)",
+      "n_total": 716,
+      "split_sizes": {
+        "train": 500,
+        "val": 108,
+        "test": 108
+      },
+      "num_cols": [
+        "X_O2",
+        "X_fuel_stream",
+        "X_CO2",
+        "X_He",
+        "pressure_atm",
+        "o2_partial_pressure_atm",
+        "inert_diluent_sum",
+        "char_scale_mm",
+        "flow_cm_s",
+        "fuel_flow_mg_s",
+        "mw_g_mol",
+        "boiling_point_K",
+        "heat_of_combustion_MJ_kg",
+        "stoich_o2_mass_ratio",
+        "sooting_propensity",
+        "cool_flame_capable"
+      ],
+      "cat_cols": [
+        "experiment_family",
+        "fuel_base",
+        "fuel_phase"
+      ],
+      "log_target": true,
+      "clip_min": 0.0,
+      "best_xgb_params": {
+        "max_depth": 6,
+        "learning_rate": 0.06,
+        "n_estimators": 320,
+        "min_child_weight": 4
+      },
+      "cv5_trainval_r2_mean": 0.6883,
+      "cv5_trainval_r2_std": 0.0381,
+      "benchmark_comparison": {
+        "Naive_Baseline": {
+          "val": {
+            "mae": 30.589,
+            "rmse": 55.737,
+            "r2": -0.1714,
+            "mae_ci95": [
+              23.0343,
+              39.153
+            ],
+            "rmse_ci95": [
+              40.4075,
+              69.2059
+            ],
+            "r2_ci95": [
+              -0.2866,
+              -0.0985
+            ]
+          },
+          "test": {
+            "mae": 30.4492,
+            "rmse": 50.8415,
+            "r2": -0.204,
+            "mae_ci95": [
+              23.4271,
+              38.7362
+            ],
+            "rmse_ci95": [
+              38.6758,
+              64.1699
+            ],
+            "r2_ci95": [
+              -0.3373,
+              -0.1049
+            ]
+          }
+        },
+        "Linear_Baseline": {
+          "val": {
+            "mae": 22.6139,
+            "rmse": 46.3854,
+            "r2": 0.1887,
+            "mae_ci95": [
+              15.715,
+              29.936
+            ],
+            "rmse_ci95": [
+              29.1187,
+              62.4823
+            ],
+            "r2_ci95": [
+              -0.0062,
+              0.4805
+            ]
+          },
+          "test": {
+            "mae": 20.9158,
+            "rmse": 38.7622,
+            "r2": 0.3001,
+            "mae_ci95": [
+              15.5634,
+              27.4948
+            ],
+            "rmse_ci95": [
+              24.2264,
+              52.3071
+            ],
+            "r2_ci95": [
+              0.0967,
+              0.5981
+            ]
+          }
+        },
+        "RandomForest": {
+          "val": {
+            "mae": 13.6192,
+            "rmse": 29.8101,
+            "r2": 0.6649,
+            "mae_ci95": [
+              9.3699,
+              18.2267
+            ],
+            "rmse_ci95": [
+              17.0376,
+              40.1655
+            ],
+            "r2_ci95": [
+              0.5201,
+              0.8306
+            ]
+          },
+          "test": {
+            "mae": 16.1758,
+            "rmse": 32.6094,
+            "r2": 0.5047,
+            "mae_ci95": [
+              11.6835,
+              21.8574
+            ],
+            "rmse_ci95": [
+              21.8906,
+              43.5275
+            ],
+            "r2_ci95": [
+              0.3464,
+              0.6986
+            ]
+          }
+        },
+        "XGBoost": {
+          "val": {
+            "mae": 14.0115,
+            "rmse": 28.862,
+            "r2": 0.6859,
+            "mae_ci95": [
+              9.2802,
+              18.1759
+            ],
+            "rmse_ci95": [
+              17.5494,
+              37.2643
+            ],
+            "r2_ci95": [
+              0.5292,
+              0.8442
+            ]
+          },
+          "test": {
+            "mae": 17.4512,
+            "rmse": 30.9329,
+            "r2": 0.5543,
+            "mae_ci95": [
+              12.23,
+              22.416
+            ],
+            "rmse_ci95": [
+              22.6765,
+              37.9208
+            ],
+            "r2_ci95": [
+              0.2318,
+              0.7645
+            ]
+          }
+        }
+      },
+      "final_test_metrics": {
+        "mae": 18.1477,
+        "rmse": 33.0903,
+        "r2": 0.49,
+        "mae_ci95": [
+          12.9331,
+          23.5781
+        ],
+        "rmse_ci95": [
+          24.4922,
+          40.1669
+        ],
+        "r2_ci95": [
+          0.1521,
+          0.7093
+        ]
+      }
+    },
+    "model2a_burning_rate_K": {
+      "task_name": "Model 2A: Droplet Burning Rate K (mm2/s)",
+      "n_total": 257,
+      "split_sizes": {
+        "train": 179,
+        "val": 39,
+        "test": 39
+      },
+      "num_cols": [
+        "pressure_atm",
+        "X_O2",
+        "X_N2",
+        "X_CO2",
+        "X_He",
+        "o2_partial_pressure_atm",
+        "inert_diluent_sum",
+        "char_scale_mm",
+        "mw_g_mol",
+        "boiling_point_K",
+        "heat_of_combustion_MJ_kg",
+        "stoich_o2_mass_ratio",
+        "sooting_propensity"
+      ],
+      "cat_cols": [
+        "fuel_base"
+      ],
+      "log_target": false,
+      "clip_min": 0.05,
+      "best_xgb_params": {
+        "max_depth": 6,
+        "learning_rate": 0.03,
+        "n_estimators": 120,
+        "min_child_weight": 1
+      },
+      "cv5_trainval_r2_mean": 0.6461,
+      "cv5_trainval_r2_std": 0.0635,
+      "benchmark_comparison": {
+        "Naive_Baseline": {
+          "val": {
+            "mae": 0.0816,
+            "rmse": 0.1036,
+            "r2": -0.0001,
+            "mae_ci95": [
+              0.0628,
+              0.1012
+            ],
+            "rmse_ci95": [
+              0.0805,
+              0.1259
+            ],
+            "r2_ci95": [
+              -0.1259,
+              -0.0
+            ]
+          },
+          "test": {
+            "mae": 0.1048,
+            "rmse": 0.1302,
+            "r2": -0.0006,
+            "mae_ci95": [
+              0.0821,
+              0.1292
+            ],
+            "rmse_ci95": [
+              0.1044,
+              0.1546
+            ],
+            "r2_ci95": [
+              -0.1594,
+              -0.0
+            ]
+          }
+        },
+        "Linear_Baseline": {
+          "val": {
+            "mae": 0.0515,
+            "rmse": 0.0776,
+            "r2": 0.4385,
+            "mae_ci95": [
+              0.0352,
+              0.0717
+            ],
+            "rmse_ci95": [
+              0.0469,
+              0.1065
+            ],
+            "r2_ci95": [
+              -0.2312,
+              0.7662
+            ]
+          },
+          "test": {
+            "mae": 0.049,
+            "rmse": 0.074,
+            "r2": 0.677,
+            "mae_ci95": [
+              0.0338,
+              0.0662
+            ],
+            "rmse_ci95": [
+              0.043,
+              0.1009
+            ],
+            "r2_ci95": [
+              0.461,
+              0.8639
+            ]
+          }
+        },
+        "RandomForest": {
+          "val": {
+            "mae": 0.0519,
+            "rmse": 0.0785,
+            "r2": 0.4254,
+            "mae_ci95": [
+              0.0361,
+              0.072
+            ],
+            "rmse_ci95": [
+              0.0472,
+              0.1066
+            ],
+            "r2_ci95": [
+              -0.2642,
+              0.7576
+            ]
+          },
+          "test": {
+            "mae": 0.051,
+            "rmse": 0.0721,
+            "r2": 0.6933,
+            "mae_ci95": [
+              0.0369,
+              0.0655
+            ],
+            "rmse_ci95": [
+              0.0521,
+              0.0893
+            ],
+            "r2_ci95": [
+              0.5417,
+              0.7987
+            ]
+          }
+        },
+        "XGBoost": {
+          "val": {
+            "mae": 0.0452,
+            "rmse": 0.067,
+            "r2": 0.5817,
+            "mae_ci95": [
+              0.0292,
+              0.0605
+            ],
+            "rmse_ci95": [
+              0.0413,
+              0.0853
+            ],
+            "r2_ci95": [
+              0.2088,
+              0.8174
+            ]
+          },
+          "test": {
+            "mae": 0.053,
+            "rmse": 0.0745,
+            "r2": 0.6727,
+            "mae_ci95": [
+              0.039,
+              0.0697
+            ],
+            "rmse_ci95": [
+              0.053,
+              0.094
+            ],
+            "r2_ci95": [
+              0.4547,
+              0.8035
+            ]
+          }
+        }
+      },
+      "final_test_metrics": {
+        "mae": 0.0523,
+        "rmse": 0.075,
+        "r2": 0.6681,
+        "mae_ci95": [
+          0.0381,
+          0.0702
+        ],
+        "rmse_ci95": [
+          0.0531,
+          0.0948
+        ],
+        "r2_ci95": [
+          0.4576,
+          0.7975
+        ]
+      }
+    },
+    "model2b_extinction_diameter": {
+      "task_name": "Model 2B: Extinction Diameter d_ext (mm)",
+      "n_total": 209,
+      "split_sizes": {
+        "train": 145,
+        "val": 32,
+        "test": 32
+      },
+      "num_cols": [
+        "pressure_atm",
+        "X_O2",
+        "X_N2",
+        "X_CO2",
+        "X_He",
+        "o2_partial_pressure_atm",
+        "inert_diluent_sum",
+        "char_scale_mm",
+        "mw_g_mol",
+        "boiling_point_K",
+        "heat_of_combustion_MJ_kg",
+        "stoich_o2_mass_ratio",
+        "sooting_propensity"
+      ],
+      "cat_cols": [
+        "fuel_base"
+      ],
+      "log_target": false,
+      "clip_min": 0.0,
+      "best_xgb_params": {
+        "max_depth": 2,
+        "learning_rate": 0.06,
+        "n_estimators": 220,
+        "min_child_weight": 4
+      },
+      "cv5_trainval_r2_mean": 0.7379,
+      "cv5_trainval_r2_std": 0.0497,
+      "benchmark_comparison": {
+        "Naive_Baseline": {
+          "val": {
+            "mae": 0.7916,
+            "rmse": 1.009,
+            "r2": -0.0053,
+            "mae_ci95": [
+              0.5955,
+              0.9958
+            ],
+            "rmse_ci95": [
+              0.8127,
+              1.1954
+            ],
+            "r2_ci95": [
+              -0.166,
+              -0.0
+            ]
+          },
+          "test": {
+            "mae": 0.9941,
+            "rmse": 1.1805,
+            "r2": -0.0001,
+            "mae_ci95": [
+              0.7957,
+              1.2113
+            ],
+            "rmse_ci95": [
+              0.9924,
+              1.3645
+            ],
+            "r2_ci95": [
+              -0.1561,
+              -0.0
+            ]
+          }
+        },
+        "Linear_Baseline": {
+          "val": {
+            "mae": 0.4195,
+            "rmse": 0.5208,
+            "r2": 0.7322,
+            "mae_ci95": [
+              0.3113,
+              0.5386
+            ],
+            "rmse_ci95": [
+              0.3868,
+              0.6624
+            ],
+            "r2_ci95": [
+              0.5584,
+              0.836
+            ]
+          },
+          "test": {
+            "mae": 0.6598,
+            "rmse": 0.8686,
+            "r2": 0.4585,
+            "mae_ci95": [
+              0.4792,
+              0.8685
+            ],
+            "rmse_ci95": [
+              0.5841,
+              1.1418
+            ],
+            "r2_ci95": [
+              0.0911,
+              0.6952
+            ]
+          }
+        },
+        "RandomForest": {
+          "val": {
+            "mae": 0.4099,
+            "rmse": 0.5854,
+            "r2": 0.6616,
+            "mae_ci95": [
+              0.2835,
+              0.5463
+            ],
+            "rmse_ci95": [
+              0.3459,
+              0.8168
+            ],
+            "r2_ci95": [
+              0.3275,
+              0.8807
+            ]
+          },
+          "test": {
+            "mae": 0.4932,
+            "rmse": 0.7364,
+            "r2": 0.6108,
+            "mae_ci95": [
+              0.3196,
+              0.6864
+            ],
+            "rmse_ci95": [
+              0.4082,
+              1.0098
+            ],
+            "r2_ci95": [
+              0.2656,
+              0.8474
+            ]
+          }
+        },
+        "XGBoost": {
+          "val": {
+            "mae": 0.4016,
+            "rmse": 0.5102,
+            "r2": 0.743,
+            "mae_ci95": [
+              0.302,
+              0.5082
+            ],
+            "rmse_ci95": [
+              0.3461,
+              0.6555
+            ],
+            "r2_ci95": [
+              0.5453,
+              0.8682
+            ]
+          },
+          "test": {
+            "mae": 0.5543,
+            "rmse": 0.7869,
+            "r2": 0.5556,
+            "mae_ci95": [
+              0.3887,
+              0.7633
+            ],
+            "rmse_ci95": [
+              0.4771,
+              1.0955
+            ],
+            "r2_ci95": [
+              0.1345,
+              0.8087
+            ]
+          }
+        }
+      },
+      "final_test_metrics": {
+        "mae": 0.5792,
+        "rmse": 0.8258,
+        "r2": 0.5106,
+        "mae_ci95": [
+          0.3944,
+          0.7889
+        ],
+        "rmse_ci95": [
+          0.5089,
+          1.1287
+        ],
+        "r2_ci95": [
+          0.1209,
+          0.7694
+        ]
+      }
+    },
+    "model3_fire_regime": {
+      "task_name": "Model 3: Flame Regime & Termination Mode",
+      "n_total": 643,
+      "class_distribution": {
+        "Radiative_Diffusive_Self_Extinction": 357,
+        "Hot_Sustained": 179,
+        "Droplet_Disruption": 61,
+        "Cool_Flame": 46
+      },
+      "split_sizes": {
+        "train": 449,
+        "val": 97,
+        "test": 97
+      },
+      "num_cols": [
+        "X_O2",
+        "X_fuel_stream",
+        "X_CO2",
+        "X_He",
+        "pressure_atm",
+        "o2_partial_pressure_atm",
+        "inert_diluent_sum",
+        "char_scale_mm",
+        "flow_cm_s",
+        "fuel_flow_mg_s",
+        "mw_g_mol",
+        "boiling_point_K",
+        "heat_of_combustion_MJ_kg",
+        "stoich_o2_mass_ratio",
+        "sooting_propensity",
+        "cool_flame_capable"
+      ],
+      "cat_cols": [
+        "experiment_family",
+        "fuel_base",
+        "fuel_phase"
+      ],
+      "classes": [
+        "Cool_Flame",
+        "Droplet_Disruption",
+        "Hot_Sustained",
+        "Radiative_Diffusive_Self_Extinction"
+      ],
+      "best_xgb_params": {
+        "max_depth": 4,
+        "learning_rate": 0.08,
+        "n_estimators": 180
+      },
+      "cv5_trainval_macro_f1_mean": 0.7936,
+      "cv5_trainval_macro_f1_std": 0.0602,
+      "benchmark_comparison": {
+        "Naive_Baseline": {
+          "val": {
+            "macro_f1": 0.1788,
+            "weighted_f1": 0.3982,
+            "balanced_accuracy": 0.25,
+            "log_loss": 15.9781,
+            "macro_f1_ci95": [
+              0.1584,
+              0.195
+            ],
+            "balanced_acc_ci95": [
+              0.25,
+              0.25
+            ],
+            "confusion_matrix": [
+              [
+                0,
+                0,
+                0,
+                7
+              ],
+              [
+                0,
+                0,
+                0,
+                9
+              ],
+              [
+                0,
+                0,
+                0,
+                27
+              ],
+              [
+                0,
+                0,
+                0,
+                54
+              ]
+            ],
+            "class_names": [
+              "Cool_Flame",
+              "Droplet_Disruption",
+              "Hot_Sustained",
+              "Radiative_Diffusive_Self_Extinction"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.1788,
+            "weighted_f1": 0.3982,
+            "balanced_accuracy": 0.25,
+            "log_loss": 15.9781,
+            "macro_f1_ci95": [
+              0.1585,
+              0.1969
+            ],
+            "balanced_acc_ci95": [
+              0.25,
+              0.25
+            ],
+            "confusion_matrix": [
+              [
+                0,
+                0,
+                0,
+                7
+              ],
+              [
+                0,
+                0,
+                0,
+                9
+              ],
+              [
+                0,
+                0,
+                0,
+                27
+              ],
+              [
+                0,
+                0,
+                0,
+                54
+              ]
+            ],
+            "class_names": [
+              "Cool_Flame",
+              "Droplet_Disruption",
+              "Hot_Sustained",
+              "Radiative_Diffusive_Self_Extinction"
+            ]
+          }
+        },
+        "Linear_Baseline": {
+          "val": {
+            "macro_f1": 0.5988,
+            "weighted_f1": 0.6039,
+            "balanced_accuracy": 0.7269,
+            "log_loss": 0.7856,
+            "macro_f1_ci95": [
+              0.5104,
+              0.6822
+            ],
+            "balanced_acc_ci95": [
+              0.6393,
+              0.8244
+            ],
+            "confusion_matrix": [
+              [
+                7,
+                0,
+                0,
+                0
+              ],
+              [
+                1,
+                7,
+                0,
+                1
+              ],
+              [
+                1,
+                7,
+                18,
+                1
+              ],
+              [
+                2,
+                12,
+                15,
+                25
+              ]
+            ],
+            "class_names": [
+              "Cool_Flame",
+              "Droplet_Disruption",
+              "Hot_Sustained",
+              "Radiative_Diffusive_Self_Extinction"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.6005,
+            "weighted_f1": 0.6285,
+            "balanced_accuracy": 0.75,
+            "log_loss": 0.8766,
+            "macro_f1_ci95": [
+              0.4774,
+              0.7019
+            ],
+            "balanced_acc_ci95": [
+              0.666,
+              0.8214
+            ],
+            "confusion_matrix": [
+              [
+                7,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                8,
+                0,
+                1
+              ],
+              [
+                6,
+                1,
+                15,
+                5
+              ],
+              [
+                7,
+                7,
+                10,
+                30
+              ]
+            ],
+            "class_names": [
+              "Cool_Flame",
+              "Droplet_Disruption",
+              "Hot_Sustained",
+              "Radiative_Diffusive_Self_Extinction"
+            ]
+          }
+        },
+        "RandomForest": {
+          "val": {
+            "macro_f1": 0.7388,
+            "weighted_f1": 0.7715,
+            "balanced_accuracy": 0.8009,
+            "log_loss": 0.6154,
+            "macro_f1_ci95": [
+              0.6405,
+              0.8294
+            ],
+            "balanced_acc_ci95": [
+              0.7154,
+              0.8898
+            ],
+            "confusion_matrix": [
+              [
+                7,
+                0,
+                0,
+                0
+              ],
+              [
+                1,
+                6,
+                0,
+                2
+              ],
+              [
+                0,
+                4,
+                22,
+                1
+              ],
+              [
+                1,
+                4,
+                10,
+                39
+              ]
+            ],
+            "class_names": [
+              "Cool_Flame",
+              "Droplet_Disruption",
+              "Hot_Sustained",
+              "Radiative_Diffusive_Self_Extinction"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.7191,
+            "weighted_f1": 0.7248,
+            "balanced_accuracy": 0.7791,
+            "log_loss": 0.5537,
+            "macro_f1_ci95": [
+              0.5928,
+              0.8134
+            ],
+            "balanced_acc_ci95": [
+              0.6639,
+              0.8681
+            ],
+            "confusion_matrix": [
+              [
+                6,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                8,
+                0,
+                1
+              ],
+              [
+                1,
+                2,
+                18,
+                6
+              ],
+              [
+                2,
+                3,
+                11,
+                38
+              ]
+            ],
+            "class_names": [
+              "Cool_Flame",
+              "Droplet_Disruption",
+              "Hot_Sustained",
+              "Radiative_Diffusive_Self_Extinction"
+            ]
+          }
+        },
+        "XGBoost": {
+          "val": {
+            "macro_f1": 0.8323,
+            "weighted_f1": 0.87,
+            "balanced_accuracy": 0.8393,
+            "log_loss": 0.549,
+            "macro_f1_ci95": [
+              0.7244,
+              0.9163
+            ],
+            "balanced_acc_ci95": [
+              0.7152,
+              0.938
+            ],
+            "confusion_matrix": [
+              [
+                6,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                7,
+                0,
+                2
+              ],
+              [
+                0,
+                4,
+                22,
+                1
+              ],
+              [
+                0,
+                1,
+                4,
+                49
+              ]
+            ],
+            "class_names": [
+              "Cool_Flame",
+              "Droplet_Disruption",
+              "Hot_Sustained",
+              "Radiative_Diffusive_Self_Extinction"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.8105,
+            "weighted_f1": 0.7848,
+            "balanced_accuracy": 0.8069,
+            "log_loss": 0.5427,
+            "macro_f1_ci95": [
+              0.7104,
+              0.885
+            ],
+            "balanced_acc_ci95": [
+              0.7024,
+              0.8957
+            ],
+            "confusion_matrix": [
+              [
+                6,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                8,
+                0,
+                1
+              ],
+              [
+                0,
+                1,
+                18,
+                8
+              ],
+              [
+                0,
+                1,
+                9,
+                44
+              ]
+            ],
+            "class_names": [
+              "Cool_Flame",
+              "Droplet_Disruption",
+              "Hot_Sustained",
+              "Radiative_Diffusive_Self_Extinction"
+            ]
+          }
+        }
+      },
+      "final_test_metrics": {
+        "macro_f1": 0.8329,
+        "weighted_f1": 0.8062,
+        "balanced_accuracy": 0.8208,
+        "log_loss": 0.5544,
+        "macro_f1_ci95": [
+          0.7382,
+          0.9034
+        ],
+        "balanced_acc_ci95": [
+          0.7155,
+          0.9079
+        ],
+        "confusion_matrix": [
+          [
+            6,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            8,
+            0,
+            1
+          ],
+          [
+            0,
+            1,
+            19,
+            7
+          ],
+          [
+            0,
+            0,
+            9,
+            45
+          ]
+        ],
+        "class_names": [
+          "Cool_Flame",
+          "Droplet_Disruption",
+          "Hot_Sustained",
+          "Radiative_Diffusive_Self_Extinction"
+        ]
+      }
+    },
+    "model4_flame_colour": {
+      "task_name": "Model 4: Flame Optical Colour & Sooting",
+      "n_total": 120,
+      "class_distribution": {
+        "Blue": 59,
+        "Blue-Limit/Dim": 29,
+        "Yellow-Blue": 20,
+        "Yellow": 12
+      },
+      "split_sizes": {
+        "train": 84,
+        "val": 18,
+        "test": 18
+      },
+      "num_cols": [
+        "X_O2",
+        "X_fuel_stream",
+        "pressure_atm",
+        "o2_partial_pressure_atm",
+        "fuel_flow_mg_s",
+        "Tad_K",
+        "Zst",
+        "mw_g_mol",
+        "heat_of_combustion_MJ_kg",
+        "stoich_o2_mass_ratio",
+        "sooting_propensity"
+      ],
+      "cat_cols": [
+        "fuel_base"
+      ],
+      "classes": [
+        "Blue",
+        "Blue-Limit/Dim",
+        "Yellow",
+        "Yellow-Blue"
+      ],
+      "best_xgb_params": {
+        "max_depth": 3,
+        "learning_rate": 0.04,
+        "n_estimators": 180
+      },
+      "cv5_trainval_macro_f1_mean": 0.8708,
+      "cv5_trainval_macro_f1_std": 0.1323,
+      "benchmark_comparison": {
+        "Naive_Baseline": {
+          "val": {
+            "macro_f1": 0.1667,
+            "weighted_f1": 0.3333,
+            "balanced_accuracy": 0.25,
+            "log_loss": 18.0218,
+            "macro_f1_ci95": [
+              0.1083,
+              0.2667
+            ],
+            "balanced_acc_ci95": [
+              0.25,
+              0.3333
+            ],
+            "confusion_matrix": [
+              [
+                9,
+                0,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                0,
+                0
+              ]
+            ],
+            "class_names": [
+              "Blue",
+              "Blue-Limit/Dim",
+              "Yellow",
+              "Yellow-Blue"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.1667,
+            "weighted_f1": 0.3333,
+            "balanced_accuracy": 0.25,
+            "log_loss": 18.0218,
+            "macro_f1_ci95": [
+              0.1087,
+              0.2734
+            ],
+            "balanced_acc_ci95": [
+              0.25,
+              0.3333
+            ],
+            "confusion_matrix": [
+              [
+                9,
+                0,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                0,
+                0
+              ]
+            ],
+            "class_names": [
+              "Blue",
+              "Blue-Limit/Dim",
+              "Yellow",
+              "Yellow-Blue"
+            ]
+          }
+        },
+        "Linear_Baseline": {
+          "val": {
+            "macro_f1": 0.6821,
+            "weighted_f1": 0.7013,
+            "balanced_accuracy": 0.6806,
+            "log_loss": 0.6453,
+            "macro_f1_ci95": [
+              0.3614,
+              0.9366
+            ],
+            "balanced_acc_ci95": [
+              0.4561,
+              0.9446
+            ],
+            "confusion_matrix": [
+              [
+                8,
+                0,
+                1,
+                0
+              ],
+              [
+                2,
+                2,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                2,
+                0
+              ],
+              [
+                2,
+                0,
+                0,
+                1
+              ]
+            ],
+            "class_names": [
+              "Blue",
+              "Blue-Limit/Dim",
+              "Yellow",
+              "Yellow-Blue"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.5542,
+            "weighted_f1": 0.5824,
+            "balanced_accuracy": 0.5417,
+            "log_loss": 0.7027,
+            "macro_f1_ci95": [
+              0.2,
+              0.7212
+            ],
+            "balanced_acc_ci95": [
+              0.25,
+              0.75
+            ],
+            "confusion_matrix": [
+              [
+                9,
+                0,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0,
+                0
+              ],
+              [
+                1,
+                0,
+                1,
+                0
+              ],
+              [
+                1,
+                0,
+                0,
+                2
+              ]
+            ],
+            "class_names": [
+              "Blue",
+              "Blue-Limit/Dim",
+              "Yellow",
+              "Yellow-Blue"
+            ]
+          }
+        },
+        "RandomForest": {
+          "val": {
+            "macro_f1": 0.8722,
+            "weighted_f1": 0.8889,
+            "balanced_accuracy": 0.8889,
+            "log_loss": 0.3145,
+            "macro_f1_ci95": [
+              0.6071,
+              1.0
+            ],
+            "balanced_acc_ci95": [
+              0.687,
+              1.0
+            ],
+            "confusion_matrix": [
+              [
+                8,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                4,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                2,
+                0
+              ],
+              [
+                1,
+                0,
+                0,
+                2
+              ]
+            ],
+            "class_names": [
+              "Blue",
+              "Blue-Limit/Dim",
+              "Yellow",
+              "Yellow-Blue"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.6893,
+            "weighted_f1": 0.7397,
+            "balanced_accuracy": 0.6875,
+            "log_loss": 0.4753,
+            "macro_f1_ci95": [
+              0.4293,
+              0.9183
+            ],
+            "balanced_acc_ci95": [
+              0.5,
+              0.9167
+            ],
+            "confusion_matrix": [
+              [
+                9,
+                0,
+                0,
+                0
+              ],
+              [
+                2,
+                1,
+                1,
+                0
+              ],
+              [
+                1,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                3
+              ]
+            ],
+            "class_names": [
+              "Blue",
+              "Blue-Limit/Dim",
+              "Yellow",
+              "Yellow-Blue"
+            ]
+          }
+        },
+        "XGBoost": {
+          "val": {
+            "macro_f1": 0.9368,
+            "weighted_f1": 0.9404,
+            "balanced_accuracy": 0.9167,
+            "log_loss": 0.2998,
+            "macro_f1_ci95": [
+              0.7033,
+              1.0
+            ],
+            "balanced_acc_ci95": [
+              0.7479,
+              1.0
+            ],
+            "confusion_matrix": [
+              [
+                9,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                4,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                2,
+                0
+              ],
+              [
+                1,
+                0,
+                0,
+                2
+              ]
+            ],
+            "class_names": [
+              "Blue",
+              "Blue-Limit/Dim",
+              "Yellow",
+              "Yellow-Blue"
+            ]
+          },
+          "test": {
+            "macro_f1": 0.5207,
+            "weighted_f1": 0.5802,
+            "balanced_accuracy": 0.5417,
+            "log_loss": 0.7584,
+            "macro_f1_ci95": [
+              0.2115,
+              0.6922
+            ],
+            "balanced_acc_ci95": [
+              0.25,
+              0.75
+            ],
+            "confusion_matrix": [
+              [
+                9,
+                0,
+                0,
+                0
+              ],
+              [
+                3,
+                0,
+                1,
+                0
+              ],
+              [
+                1,
+                0,
+                1,
+                0
+              ],
+              [
+                1,
+                0,
+                0,
+                2
+              ]
+            ],
+            "class_names": [
+              "Blue",
+              "Blue-Limit/Dim",
+              "Yellow",
+              "Yellow-Blue"
+            ]
+          }
+        }
+      },
+      "final_test_metrics": {
+        "macro_f1": 0.6295,
+        "weighted_f1": 0.6869,
+        "balanced_accuracy": 0.6042,
+        "log_loss": 0.6184,
+        "macro_f1_ci95": [
+          0.2926,
+          0.8607
+        ],
+        "balanced_acc_ci95": [
+          0.3412,
+          0.85
+        ],
+        "confusion_matrix": [
+          [
+            9,
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            1,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            2
+          ]
+        ],
+        "class_names": [
+          "Blue",
+          "Blue-Limit/Dim",
+          "Yellow",
+          "Yellow-Blue"
+        ]
+      }
+    },
+    "model5a_delta_O2_pct": {
+      "task_name": "Model 5A: Solid Burn Delta O2 (%)",
+      "n_total": 122,
+      "split_sizes": {
+        "train": 84,
+        "val": 19,
+        "test": 19
+      },
+      "num_cols": [
+        "thickness_mm",
+        "width_mm",
+        "is_one_sided",
+        "flow_restrictor",
+        "air_flow_init",
+        "air_flow_mean",
+        "air_flow_min",
+        "fan_init",
+        "init_O2_pct",
+        "mw_g_mol",
+        "heat_of_combustion_MJ_kg",
+        "stoich_o2_mass_ratio",
+        "sooting_propensity",
+        "sample_cross_section_mm2"
+      ],
+      "cat_cols": [
+        "fuel_base",
+        "geometry"
+      ],
+      "log_target": true,
+      "clip_min": 0.0,
+      "best_xgb_params": {
+        "max_depth": 3,
+        "learning_rate": 0.06,
+        "n_estimators": 320,
+        "min_child_weight": 1
+      },
+      "cv5_trainval_r2_mean": 0.6223,
+      "cv5_trainval_r2_std": 0.1445,
+      "benchmark_comparison": {
+        "Naive_Baseline": {
+          "val": {
+            "mae": 0.4096,
+            "rmse": 0.4822,
+            "r2": -0.0025,
+            "mae_ci95": [
+              0.3129,
+              0.5345
+            ],
+            "rmse_ci95": [
+              0.3518,
+              0.6315
+            ],
+            "r2_ci95": [
+              -0.2425,
+              -0.0
+            ]
+          },
+          "test": {
+            "mae": 0.3732,
+            "rmse": 0.4677,
+            "r2": -0.0144,
+            "mae_ci95": [
+              0.2542,
+              0.4981
+            ],
+            "rmse_ci95": [
+              0.3074,
+              0.5965
+            ],
+            "r2_ci95": [
+              -0.2656,
+              -0.0
+            ]
+          }
+        },
+        "Linear_Baseline": {
+          "val": {
+            "mae": 0.268,
+            "rmse": 0.3552,
+            "r2": 0.4558,
+            "mae_ci95": [
+              0.1667,
+              0.3615
+            ],
+            "rmse_ci95": [
+              0.246,
+              0.4441
+            ],
+            "r2_ci95": [
+              -0.0207,
+              0.6368
+            ]
+          },
+          "test": {
+            "mae": 0.2773,
+            "rmse": 0.3798,
+            "r2": 0.3309,
+            "mae_ci95": [
+              0.1609,
+              0.3871
+            ],
+            "rmse_ci95": [
+              0.2263,
+              0.4928
+            ],
+            "r2_ci95": [
+              -0.2272,
+              0.6629
+            ]
+          }
+        },
+        "RandomForest": {
+          "val": {
+            "mae": 0.1718,
+            "rmse": 0.2797,
+            "r2": 0.6626,
+            "mae_ci95": [
+              0.0856,
+              0.2665
+            ],
+            "rmse_ci95": [
+              0.1265,
+              0.4181
+            ],
+            "r2_ci95": [
+              0.469,
+              0.8902
+            ]
+          },
+          "test": {
+            "mae": 0.2013,
+            "rmse": 0.3051,
+            "r2": 0.5682,
+            "mae_ci95": [
+              0.1139,
+              0.3186
+            ],
+            "rmse_ci95": [
+              0.1528,
+              0.4586
+            ],
+            "r2_ci95": [
+              -0.0336,
+              0.8649
+            ]
+          }
+        },
+        "XGBoost": {
+          "val": {
+            "mae": 0.1572,
+            "rmse": 0.2648,
+            "r2": 0.6977,
+            "mae_ci95": [
+              0.0702,
+              0.25
+            ],
+            "rmse_ci95": [
+              0.1187,
+              0.3979
+            ],
+            "r2_ci95": [
+              0.5045,
+              0.9036
+            ]
+          },
+          "test": {
+            "mae": 0.1799,
+            "rmse": 0.2962,
+            "r2": 0.5931,
+            "mae_ci95": [
+              0.1006,
+              0.3034
+            ],
+            "rmse_ci95": [
+              0.1313,
+              0.4682
+            ],
+            "r2_ci95": [
+              -0.0949,
+              0.9181
+            ]
+          }
+        }
+      },
+      "final_test_metrics": {
+        "mae": 0.1986,
+        "rmse": 0.3005,
+        "r2": 0.5812,
+        "mae_ci95": [
+          0.1183,
+          0.3168
+        ],
+        "rmse_ci95": [
+          0.1512,
+          0.4596
+        ],
+        "r2_ci95": [
+          -0.0615,
+          0.9002
+        ]
+      }
+    },
+    "model5b_delta_CO2_pct": {
+      "task_name": "Model 5B: Solid Burn Delta CO2 (%)",
+      "n_total": 121,
+      "split_sizes": {
+        "train": 84,
+        "val": 18,
+        "test": 19
+      },
+      "num_cols": [
+        "thickness_mm",
+        "width_mm",
+        "is_one_sided",
+        "flow_restrictor",
+        "air_flow_init",
+        "air_flow_mean",
+        "air_flow_min",
+        "fan_init",
+        "init_O2_pct",
+        "mw_g_mol",
+        "heat_of_combustion_MJ_kg",
+        "stoich_o2_mass_ratio",
+        "sooting_propensity",
+        "sample_cross_section_mm2"
+      ],
+      "cat_cols": [
+        "fuel_base",
+        "geometry"
+      ],
+      "log_target": true,
+      "clip_min": 0.0,
+      "best_xgb_params": {
+        "max_depth": 3,
+        "learning_rate": 0.03,
+        "n_estimators": 320,
+        "min_child_weight": 1
+      },
+      "cv5_trainval_r2_mean": 0.6615,
+      "cv5_trainval_r2_std": 0.0951,
+      "benchmark_comparison": {
+        "Naive_Baseline": {
+          "val": {
+            "mae": 0.3255,
+            "rmse": 0.4007,
+            "r2": -0.0028,
+            "mae_ci95": [
+              0.2132,
+              0.4389
+            ],
+            "rmse_ci95": [
+              0.2516,
+              0.5474
+            ],
+            "r2_ci95": [
+              -0.4196,
+              -0.0
+            ]
+          },
+          "test": {
+            "mae": 0.3314,
+            "rmse": 0.3935,
+            "r2": -0.0187,
+            "mae_ci95": [
+              0.2387,
+              0.4247
+            ],
+            "rmse_ci95": [
+              0.2817,
+              0.4932
+            ],
+            "r2_ci95": [
+              -0.327,
+              -0.0001
+            ]
+          }
+        },
+        "Linear_Baseline": {
+          "val": {
+            "mae": 9042.0996,
+            "rmse": 38361.4224,
+            "r2": -9189036854.8052,
+            "mae_ci95": [
+              0.1766,
+              27125.8608
+            ],
+            "rmse_ci95": [
+              0.2169,
+              66443.9326
+            ],
+            "r2_ci95": [
+              -56344409148.1459,
+              0.601
+            ]
+          },
+          "test": {
+            "mae": 0.2124,
+            "rmse": 0.3002,
+            "r2": 0.4074,
+            "mae_ci95": [
+              0.1233,
+              0.3049
+            ],
+            "rmse_ci95": [
+              0.1826,
+              0.3928
+            ],
+            "r2_ci95": [
+              0.0484,
+              0.6737
+            ]
+          }
+        },
+        "RandomForest": {
+          "val": {
+            "mae": 0.1641,
+            "rmse": 0.2657,
+            "r2": 0.5593,
+            "mae_ci95": [
+              0.083,
+              0.2713
+            ],
+            "rmse_ci95": [
+              0.1307,
+              0.387
+            ],
+            "r2_ci95": [
+              0.2173,
+              0.7733
+            ]
+          },
+          "test": {
+            "mae": 0.2029,
+            "rmse": 0.2947,
+            "r2": 0.4289,
+            "mae_ci95": [
+              0.12,
+              0.3019
+            ],
+            "rmse_ci95": [
+              0.1823,
+              0.3943
+            ],
+            "r2_ci95": [
+              -0.0735,
+              0.6983
+            ]
+          }
+        },
+        "XGBoost": {
+          "val": {
+            "mae": 0.1612,
+            "rmse": 0.2477,
+            "r2": 0.6169,
+            "mae_ci95": [
+              0.087,
+              0.2618
+            ],
+            "rmse_ci95": [
+              0.1301,
+              0.358
+            ],
+            "r2_ci95": [
+              0.3397,
+              0.782
+            ]
+          },
+          "test": {
+            "mae": 0.2176,
+            "rmse": 0.3124,
+            "r2": 0.3581,
+            "mae_ci95": [
+              0.1271,
+              0.3177
+            ],
+            "rmse_ci95": [
+              0.184,
+              0.4176
+            ],
+            "r2_ci95": [
+              -0.2044,
+              0.6601
+            ]
+          }
+        }
+      },
+      "final_test_metrics": {
+        "mae": 0.2023,
+        "rmse": 0.2879,
+        "r2": 0.4548,
+        "mae_ci95": [
+          0.1185,
+          0.3031
+        ],
+        "rmse_ci95": [
+          0.1713,
+          0.4021
+        ],
+        "r2_ci95": [
+          -0.1278,
+          0.7515
+        ]
+      }
+    },
+    "model5c_delta_CO_ppm": {
+      "task_name": "Model 5C: Solid Burn Delta CO (ppm)",
+      "n_total": 118,
+      "split_sizes": {
+        "train": 82,
+        "val": 18,
+        "test": 18
+      },
+      "num_cols": [
+        "thickness_mm",
+        "width_mm",
+        "is_one_sided",
+        "flow_restrictor",
+        "air_flow_init",
+        "air_flow_mean",
+        "air_flow_min",
+        "fan_init",
+        "init_O2_pct",
+        "mw_g_mol",
+        "heat_of_combustion_MJ_kg",
+        "stoich_o2_mass_ratio",
+        "sooting_propensity",
+        "sample_cross_section_mm2"
+      ],
+      "cat_cols": [
+        "fuel_base",
+        "geometry"
+      ],
+      "log_target": true,
+      "clip_min": 0.0,
+      "best_xgb_params": {
+        "max_depth": 2,
+        "learning_rate": 0.06,
+        "n_estimators": 220,
+        "min_child_weight": 1
+      },
+      "cv5_trainval_r2_mean": 0.4962,
+      "cv5_trainval_r2_std": 0.1815,
+      "benchmark_comparison": {
+        "Naive_Baseline": {
+          "val": {
+            "mae": 121.0074,
+            "rmse": 197.9051,
+            "r2": -0.2777,
+            "mae_ci95": [
+              53.692,
+              205.439
+            ],
+            "rmse_ci95": [
+              83.0701,
+              282.4371
+            ],
+            "r2_ci95": [
+              -0.9202,
+              -0.0308
+            ]
+          },
+          "test": {
+            "mae": 106.2222,
+            "rmse": 168.9981,
+            "r2": -0.2539,
+            "mae_ci95": [
+              46.7918,
+              169.3302
+            ],
+            "rmse_ci95": [
+              71.5543,
+              236.8564
+            ],
+            "r2_ci95": [
+              -0.7802,
+              -0.0196
+            ]
+          }
+        },
+        "Linear_Baseline": {
+          "val": {
+            "mae": 108.1055,
+            "rmse": 170.1387,
+            "r2": 0.0557,
+            "mae_ci95": [
+              51.6054,
+              173.2786
+            ],
+            "rmse_ci95": [
+              81.5516,
+              242.9216
+            ],
+            "r2_ci95": [
+              -0.426,
+              0.3426
+            ]
+          },
+          "test": {
+            "mae": 9128.1839,
+            "rmse": 38354.6204,
+            "r2": -64583.2141,
+            "mae_ci95": [
+              57.2405,
+              27242.4536
+            ],
+            "rmse_ci95": [
+              93.9222,
+              66431.9366
+            ],
+            "r2_ci95": [
+              -423513.773,
+              0.3331
+            ]
+          }
+        },
+        "RandomForest": {
+          "val": {
+            "mae": 72.9503,
+            "rmse": 127.2672,
+            "r2": 0.4716,
+            "mae_ci95": [
+              30.0577,
+              126.5156
+            ],
+            "rmse_ci95": [
+              42.713,
+              189.979
+            ],
+            "r2_ci95": [
+              0.2187,
+              0.8082
+            ]
+          },
+          "test": {
+            "mae": 65.7189,
+            "rmse": 109.9968,
+            "r2": 0.4688,
+            "mae_ci95": [
+              28.4265,
+              109.2732
+            ],
+            "rmse_ci95": [
+              44.9945,
+              157.2641
+            ],
+            "r2_ci95": [
+              0.144,
+              0.73
+            ]
+          }
+        },
+        "XGBoost": {
+          "val": {
+            "mae": 68.7713,
+            "rmse": 116.8605,
+            "r2": 0.5545,
+            "mae_ci95": [
+              28.0963,
+              114.938
+            ],
+            "rmse_ci95": [
+              44.9575,
+              178.6696
+            ],
+            "r2_ci95": [
+              0.1497,
+              0.8374
+            ]
+          },
+          "test": {
+            "mae": 63.5814,
+            "rmse": 109.8717,
+            "r2": 0.47,
+            "mae_ci95": [
+              25.895,
+              115.1719
+            ],
+            "rmse_ci95": [
+              38.2025,
+              172.923
+            ],
+            "r2_ci95": [
+              -0.1824,
+              0.8951
+            ]
+          }
+        }
+      },
+      "final_test_metrics": {
+        "mae": 55.8931,
+        "rmse": 105.1654,
+        "r2": 0.5144,
+        "mae_ci95": [
+          20.1139,
+          104.7328
+        ],
+        "rmse_ci95": [
+          24.2904,
+          171.8214
+        ],
+        "r2_ci95": [
+          -0.1392,
+          0.9613
+        ]
+      }
+    }
+  },
+  "psi117_validation": {
+    "psi117_cool_K_samples": 19,
+    "psi117_cool_K_mae_mm2_s": 0.0378,
+    "psi117_alkane_hot_dext_samples": 15,
+    "psi117_alkane_hot_dext_mae_mm": 0.6654
+  },
+  "scenario_benchmarks": {
+    "Scenario A \u2014 ISS 0g Heptane Cool-Flame Droplet (d0=3.5mm, 21% O2)": {
+      "inputs": {
+        "fuel": "Heptane",
+        "phase": "liquid",
+        "gravity_g": 0.0,
+        "o2_pct": 21.0,
+        "pressure_atm": 1.0,
+        "flow_cm_s": 0.2,
+        "area_m2": 1.0,
+        "char_scale_mm": 3.5
+      },
+      "confidence_tier": "Data-backed (High Confidence)",
+      "warning": null,
+      "duration_and_persistence": {
+        "burn_duration_s": 18.58,
+        "duration_statement": "Predicted to burn for 18.6 s",
+        "persistence_stage": "Sustained_Burn",
+        "stage_probabilities": {
+          "Brief_Flash": 0.0009,
+          "No_Sustained_Burn": 0.0008,
+          "Sustained_Burn": 0.9984
+        }
+      },
+      "droplet_kinetics": {
+        "burning_rate_K_mm2_s": 0.42,
+        "extinction_diameter_mm": 2.165,
+        "d2_law_lifetime_s": 25.14
+      },
+      "regime_and_optics": {
+        "fire_regime": "Cool_Flame",
+        "regime_probabilities": {
+          "Cool_Flame": 0.8068,
+          "Droplet_Disruption": 0.059,
+          "Hot_Sustained": 0.0124,
+          "Radiative_Diffusive_Self_Extinction": 0.1218
+        },
+        "flame_colour": "Blue-Limit/Dim (500\u2013800 K CH\u2082O* Chemiluminescence)",
+        "colour_probabilities": {
+          "Blue": 0.315,
+          "Blue-Limit/Dim": 0.0101,
+          "Yellow": 0.6625,
+          "Yellow-Blue": 0.0124
+        }
+      },
+      "gas_signatures": {
+        "delta_O2_pct": 0.356,
+        "delta_CO2_pct": 0.173,
+        "delta_CO_ppm": 71.1
+      },
+      "life_damage_crew": {
+        "co_concentration_ppm": 71.1,
+        "nasa_smac_1hr_co_ppm": 55.0,
+        "nasa_smac_24hr_co_ppm": 15.0,
+        "o2_consumed_pct_vol": 0.356,
+        "ambient_o2_remaining_pct": 20.64,
+        "hypoxia_threshold_o2_pct": 15.0,
+        "co2_added_pct_vol": 0.173,
+        "toxic_formaldehyde_ch2o_mg_m3": 4.95,
+        "nasa_smac_ch2o_mg_m3": 0.5,
+        "fractional_effective_dose_fed": 0.0415,
+        "time_to_crew_co_smac_s": 14.4
+      },
+      "infrastructure_damage_vehicle": {
+        "radiative_heat_flux_kw_m2": 2.27,
+        "avionics_damage_flux_threshold_kw_m2": 12.5,
+        "peak_flame_temp_K": 580.0,
+        "aluminum_6061_melt_K": 933.0,
+        "cabin_pressure_rise_kPa": 3.11,
+        "pressure_ratio_Pmax_P0": 1.0307,
+        "damaged_area_m2": 0.0105,
+        "char_length_cm": 10.2,
+        "cool_flame_reignition_risk": {
+          "cool_flame_active_or_probable": true,
+          "cool_flame_probability": 0.807,
+          "eclss_o2_sustained_hazard": true,
+          "estimated_hot_reignition_window_s": 44.8,
+          "mechanism_note": "Continuous ECLSS O\u2082 supply sustains invisible 500\u2013800 K formaldehyde-producing combustion and enables hot flame reignition upon airflow resumption."
+        }
+      }
+    },
+    "Scenario B \u2014 ISS 0g Methanol Droplet Completion (d0=2.8mm, 25% O2)": {
+      "inputs": {
+        "fuel": "Methanol",
+        "phase": "liquid",
+        "gravity_g": 0.0,
+        "o2_pct": 25.0,
+        "pressure_atm": 1.0,
+        "flow_cm_s": 0.2,
+        "area_m2": 1.0,
+        "char_scale_mm": 2.8
+      },
+      "confidence_tier": "Data-backed (High Confidence)",
+      "warning": null,
+      "duration_and_persistence": {
+        "burn_duration_s": 11.28,
+        "duration_statement": "Predicted to burn for 11.3 s",
+        "persistence_stage": "Sustained_Burn",
+        "stage_probabilities": {
+          "Brief_Flash": 0.0,
+          "No_Sustained_Burn": 0.0002,
+          "Sustained_Burn": 0.9998
+        }
+      },
+      "droplet_kinetics": {
+        "burning_rate_K_mm2_s": 0.664,
+        "extinction_diameter_mm": 0.58,
+        "d2_law_lifetime_s": 11.3
+      },
+      "regime_and_optics": {
+        "fire_regime": "Droplet_Disruption",
+        "regime_probabilities": {
+          "Cool_Flame": 0.0,
+          "Droplet_Disruption": 0.6293,
+          "Hot_Sustained": 0.1459,
+          "Radiative_Diffusive_Self_Extinction": 0.2249
+        },
+        "flame_colour": "Blue",
+        "colour_probabilities": {
+          "Blue": 0.7252,
+          "Blue-Limit/Dim": 0.0158,
+          "Yellow": 0.2479,
+          "Yellow-Blue": 0.0111
+        }
+      },
+      "gas_signatures": {
+        "delta_O2_pct": 0.213,
+        "delta_CO2_pct": 0.116,
+        "delta_CO_ppm": 14.0
+      },
+      "life_damage_crew": {
+        "co_concentration_ppm": 14.0,
+        "nasa_smac_1hr_co_ppm": 55.0,
+        "nasa_smac_24hr_co_ppm": 15.0,
+        "o2_consumed_pct_vol": 0.213,
+        "ambient_o2_remaining_pct": 24.79,
+        "hypoxia_threshold_o2_pct": 15.0,
+        "co2_added_pct_vol": 0.116,
+        "toxic_formaldehyde_ch2o_mg_m3": 0.35,
+        "nasa_smac_ch2o_mg_m3": 0.5,
+        "fractional_effective_dose_fed": 0.0028,
+        "time_to_crew_co_smac_s": 44.3
+      },
+      "infrastructure_damage_vehicle": {
+        "radiative_heat_flux_kw_m2": 17.54,
+        "avionics_damage_flux_threshold_kw_m2": 12.5,
+        "peak_flame_temp_K": 1524.0,
+        "aluminum_6061_melt_K": 933.0,
+        "cabin_pressure_rise_kPa": 1.95,
+        "pressure_ratio_Pmax_P0": 1.0192,
+        "damaged_area_m2": 0.0085,
+        "char_length_cm": 9.2,
+        "cool_flame_reignition_risk": {
+          "cool_flame_active_or_probable": false,
+          "cool_flame_probability": 0.0,
+          "eclss_o2_sustained_hazard": false,
+          "estimated_hot_reignition_window_s": null,
+          "mechanism_note": "Direct hot oxidation kinetics dominate without metastable cool-flame plateau."
+        }
+      }
+    },
+    "Scenario C \u2014 ISS 0g PMMA Enclosure Burn (BASS-II/SoFIE)": {
+      "inputs": {
+        "fuel": "PMMA",
+        "phase": "solid",
+        "gravity_g": 0.0,
+        "o2_pct": 22.0,
+        "pressure_atm": 1.0,
+        "flow_cm_s": 5.0,
+        "area_m2": 0.8,
+        "char_scale_mm": 2.0
+      },
+      "confidence_tier": "Data-backed (High Confidence)",
+      "warning": null,
+      "duration_and_persistence": {
+        "burn_duration_s": 15.51,
+        "duration_statement": "Predicted to burn for 15.5 s",
+        "persistence_stage": "Sustained_Burn",
+        "stage_probabilities": {
+          "Brief_Flash": 0.0001,
+          "No_Sustained_Burn": 0.0013,
+          "Sustained_Burn": 0.9986
+        }
+      },
+      "droplet_kinetics": {
+        "burning_rate_K_mm2_s": 0.651,
+        "extinction_diameter_mm": 0.617,
+        "d2_law_lifetime_s": 5.56
+      },
+      "regime_and_optics": {
+        "fire_regime": "Radiative_Diffusive_Self_Extinction",
+        "regime_probabilities": {
+          "Cool_Flame": 0.0,
+          "Droplet_Disruption": 0.0442,
+          "Hot_Sustained": 0.1457,
+          "Radiative_Diffusive_Self_Extinction": 0.81
+        },
+        "flame_colour": "Yellow",
+        "colour_probabilities": {
+          "Blue": 0.3101,
+          "Blue-Limit/Dim": 0.0102,
+          "Yellow": 0.6673,
+          "Yellow-Blue": 0.0124
+        }
+      },
+      "gas_signatures": {
+        "delta_O2_pct": 0.069,
+        "delta_CO2_pct": 0.036,
+        "delta_CO_ppm": 12.5
+      },
+      "life_damage_crew": {
+        "co_concentration_ppm": 12.5,
+        "nasa_smac_1hr_co_ppm": 55.0,
+        "nasa_smac_24hr_co_ppm": 15.0,
+        "o2_consumed_pct_vol": 0.069,
+        "ambient_o2_remaining_pct": 21.93,
+        "hypoxia_threshold_o2_pct": 15.0,
+        "co2_added_pct_vol": 0.036,
+        "toxic_formaldehyde_ch2o_mg_m3": 0.85,
+        "nasa_smac_ch2o_mg_m3": 0.5,
+        "fractional_effective_dose_fed": 0.0068,
+        "time_to_crew_co_smac_s": 68.2
+      },
+      "infrastructure_damage_vehicle": {
+        "radiative_heat_flux_kw_m2": 30.98,
+        "avionics_damage_flux_threshold_kw_m2": 12.5,
+        "peak_flame_temp_K": 1446.0,
+        "aluminum_6061_melt_K": 933.0,
+        "cabin_pressure_rise_kPa": 1.81,
+        "pressure_ratio_Pmax_P0": 1.0179,
+        "damaged_area_m2": 0.0131,
+        "char_length_cm": 11.4,
+        "cool_flame_reignition_risk": {
+          "cool_flame_active_or_probable": false,
+          "cool_flame_probability": 0.0,
+          "eclss_o2_sustained_hazard": false,
+          "estimated_hot_reignition_window_s": null,
+          "mechanism_note": "Direct hot oxidation kinetics dominate without metastable cool-flame plateau."
+        }
+      }
+    },
+    "Scenario D \u2014 Lunar Base Partial-G (0.16g, 0.6 atm, 34% O2)": {
+      "inputs": {
+        "fuel": "Heptane",
+        "phase": "liquid",
+        "gravity_g": 0.16,
+        "o2_pct": 34.0,
+        "pressure_atm": 0.6,
+        "flow_cm_s": 4.0,
+        "area_m2": 1.2,
+        "char_scale_mm": 3.0
+      },
+      "confidence_tier": "Theory-based (Moderate Confidence)",
+      "warning": "Theory-backed regime (Trained XGBoost + Physics Active): Partial-gravity/scale coupling combines trained XGBoost estimators with Grashof/Rayleigh/d\u00b2-law equations.",
+      "duration_and_persistence": {
+        "burn_duration_s": 10.16,
+        "duration_statement": "Predicted to burn for 10.2 s",
+        "persistence_stage": "Sustained_Burn",
+        "stage_probabilities": {
+          "Brief_Flash": 0.0003,
+          "No_Sustained_Burn": 0.0011,
+          "Sustained_Burn": 0.9986
+        }
+      },
+      "droplet_kinetics": {
+        "burning_rate_K_mm2_s": 0.815,
+        "extinction_diameter_mm": 0.164,
+        "d2_law_lifetime_s": 11.01
+      },
+      "regime_and_optics": {
+        "fire_regime": "Hot_Sustained",
+        "regime_probabilities": {
+          "Cool_Flame": 0.0365,
+          "Droplet_Disruption": 0.0833,
+          "Hot_Sustained": 0.6775,
+          "Radiative_Diffusive_Self_Extinction": 0.2027
+        },
+        "flame_colour": "Yellow-Blue",
+        "colour_probabilities": {
+          "Blue": 0.2898,
+          "Blue-Limit/Dim": 0.0093,
+          "Yellow": 0.6896,
+          "Yellow-Blue": 0.0113
+        }
+      },
+      "gas_signatures": {
+        "delta_O2_pct": 0.104,
+        "delta_CO2_pct": 0.069,
+        "delta_CO_ppm": 11.6
+      },
+      "life_damage_crew": {
+        "co_concentration_ppm": 11.6,
+        "nasa_smac_1hr_co_ppm": 55.0,
+        "nasa_smac_24hr_co_ppm": 15.0,
+        "o2_consumed_pct_vol": 0.104,
+        "ambient_o2_remaining_pct": 33.9,
+        "hypoxia_threshold_o2_pct": 15.0,
+        "co2_added_pct_vol": 0.069,
+        "toxic_formaldehyde_ch2o_mg_m3": 0.46,
+        "nasa_smac_ch2o_mg_m3": 0.5,
+        "fractional_effective_dose_fed": 0.0037,
+        "time_to_crew_co_smac_s": 48.2
+      },
+      "infrastructure_damage_vehicle": {
+        "radiative_heat_flux_kw_m2": 78.53,
+        "avionics_damage_flux_threshold_kw_m2": 12.5,
+        "peak_flame_temp_K": 1777.2,
+        "aluminum_6061_melt_K": 933.0,
+        "cabin_pressure_rise_kPa": 2.13,
+        "pressure_ratio_Pmax_P0": 1.035,
+        "damaged_area_m2": 0.0136,
+        "char_length_cm": 11.7,
+        "cool_flame_reignition_risk": {
+          "cool_flame_active_or_probable": false,
+          "cool_flame_probability": 0.036,
+          "eclss_o2_sustained_hazard": true,
+          "estimated_hot_reignition_window_s": null,
+          "mechanism_note": "Direct hot oxidation kinetics dominate without metastable cool-flame plateau."
+        }
+      }
+    },
+    "Scenario E \u2014 Earth Buoyant Lab (1.0g, 1.0 atm, 21% O2)": {
+      "inputs": {
+        "fuel": "Heptane",
+        "phase": "liquid",
+        "gravity_g": 1.0,
+        "o2_pct": 20.9,
+        "pressure_atm": 1.0,
+        "flow_cm_s": 1.0,
+        "area_m2": 1.5,
+        "char_scale_mm": 3.0
+      },
+      "confidence_tier": "Theory-based (Moderate Confidence)",
+      "warning": "Theory-backed regime (Trained XGBoost + Physics Active): Partial-gravity/scale coupling combines trained XGBoost estimators with Grashof/Rayleigh/d\u00b2-law equations.",
+      "duration_and_persistence": {
+        "burn_duration_s": 11.36,
+        "duration_statement": "Predicted to burn for 11.4 s",
+        "persistence_stage": "Sustained_Burn",
+        "stage_probabilities": {
+          "Brief_Flash": 0.0006,
+          "No_Sustained_Burn": 0.0004,
+          "Sustained_Burn": 0.9989
+        }
+      },
+      "droplet_kinetics": {
+        "burning_rate_K_mm2_s": 0.705,
+        "extinction_diameter_mm": 1.279,
+        "d2_law_lifetime_s": 10.45
+      },
+      "regime_and_optics": {
+        "fire_regime": "Hot_Sustained",
+        "regime_probabilities": {
+          "Cool_Flame": 0.0269,
+          "Droplet_Disruption": 0.5431,
+          "Hot_Sustained": 0.061,
+          "Radiative_Diffusive_Self_Extinction": 0.369
+        },
+        "flame_colour": "Yellow",
+        "colour_probabilities": {
+          "Blue": 0.3205,
+          "Blue-Limit/Dim": 0.01,
+          "Yellow": 0.6572,
+          "Yellow-Blue": 0.0123
+        }
+      },
+      "gas_signatures": {
+        "delta_O2_pct": 0.122,
+        "delta_CO2_pct": 0.049,
+        "delta_CO_ppm": 12.6
+      },
+      "life_damage_crew": {
+        "co_concentration_ppm": 12.6,
+        "nasa_smac_1hr_co_ppm": 55.0,
+        "nasa_smac_24hr_co_ppm": 15.0,
+        "o2_consumed_pct_vol": 0.122,
+        "ambient_o2_remaining_pct": 20.78,
+        "hypoxia_threshold_o2_pct": 15.0,
+        "co2_added_pct_vol": 0.049,
+        "toxic_formaldehyde_ch2o_mg_m3": 0.46,
+        "nasa_smac_ch2o_mg_m3": 0.5,
+        "fractional_effective_dose_fed": 0.0042,
+        "time_to_crew_co_smac_s": 49.6
+      },
+      "infrastructure_damage_vehicle": {
+        "radiative_heat_flux_kw_m2": 52.72,
+        "avionics_damage_flux_threshold_kw_m2": 12.5,
+        "peak_flame_temp_K": 1537.4,
+        "aluminum_6061_melt_K": 933.0,
+        "cabin_pressure_rise_kPa": 1.71,
+        "pressure_ratio_Pmax_P0": 1.0169,
+        "damaged_area_m2": 0.0076,
+        "char_length_cm": 8.7,
+        "cool_flame_reignition_risk": {
+          "cool_flame_active_or_probable": false,
+          "cool_flame_probability": 0.027,
+          "eclss_o2_sustained_hazard": false,
+          "estimated_hot_reignition_window_s": null,
+          "mechanism_note": "Direct hot oxidation kinetics dominate without metastable cool-flame plateau."
+        }
+      }
+    }
+  }
+}

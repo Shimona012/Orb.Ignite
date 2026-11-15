@@ -1,3 +1,5 @@
+
+import html
 import json
 import os
 import re
@@ -249,14 +251,17 @@ User Question: {active_query}
                                 st.caption(f"Mission: {d.get('mission')} | Fuel: {d.get('fuel')} | Year: {d.get('year')}")
                                 st.write(d.get("summary", ""))
                             with c2:
-                                if url and ntrs_id:
+                                
+                                safe_url = html.escape(url, quote=True) if url and url.lower().startswith(("http://", "https://")) else ""
+                                if safe_url and ntrs_id:
                                     st.markdown(
-                                        f"<div style='text-align:right;'><a href='{url}' target='_blank' rel='noopener noreferrer' style='color:#02BFE7; font-family:DMMono; text-decoration:none; font-size:0.8rem;'>View NTRS ↗</a></div>",
+                                        f"<div style='text-align:right;'><a href='{safe_url}' target='_blank' rel='noopener noreferrer' style='color:#02BFE7; font-family:DMMono; text-decoration:none; font-size:0.8rem;'>View NTRS ↗</a></div>",
                                         unsafe_allow_html=True,
                                     )
                                 elif pdf_file:
+                                    safe_pdf = html.escape(str(pdf_file))
                                     st.markdown(
-                                        f"<div style='text-align:right;'><span style='color:#8C9FB5; font-family:DMMono; font-size:0.75rem;'>Data/{pdf_file}</span></div>",
+                                        f"<div style='text-align:right;'><span style='color:#8C9FB5; font-family:DMMono; font-size:0.75rem;'>Data/{safe_pdf}</span></div>",
                                         unsafe_allow_html=True,
                                     )
                     else:
@@ -320,7 +325,8 @@ User Question: {active_query}
                             st.caption(f"Local File: `Data/{doc.get('pdf_file')}`")
                         st.write(doc.get("summary", ""))
                         citation_url = doc.get("citation_url")
-                        if citation_url:
+                        
+                        if citation_url and str(citation_url).strip().lower().startswith(("http://", "https://")):
                             st.markdown(f"[Open NASA NTRS Citation ↗]({citation_url})")
 
             with reg_tabs[1]:

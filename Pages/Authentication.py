@@ -1,5 +1,6 @@
 #Authtenticate for editing and admin uses, admins can edit/add/delete datasets, presets etc.
 from datetime import datetime, timezone
+import hmac
 import json
 import os
 import re
@@ -7,8 +8,8 @@ import pandas as pd
 import streamlit as st
 from supabase import create_client
 #Using multiple google cloud api's:
+#cloud admin api,cloud build api,artifact registry, compute engine,cloud storage api,cloud logging api,secret manager api,cloud resource manager api,cloud deploy ap
 
-#need to add common login, and a basic admin login-logout system.
 def _get_supabase_client():
     url = None
     key = None
@@ -33,6 +34,35 @@ def _get_supabase_client():
 
 def _data_dir():
     return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Data")
+
+
+
+PROTECTED_DATA_FILES = {
+    "users.json",
+    "saved_scenarios.json",
+    "user_presets.json",
+    "dataset_state.json",
+    "contact_messages.json",
+    "experiments.json",
+    "ntrs_links.json",
+    "vinyl.png",
+    "filter_white.png",
+    "filter_black.png",
+}
+
+
+
+def _sanitize_data_filename(name):
+    base = os.path.basename(str(name or "").strip())
+    clean = re.sub(r"[^a-zA-Z0-9._\- ()]", "_", base).lstrip(".")
+    return clean
+
+
+
+def _is_within_data_dir(target_path):
+    base_real = os.path.realpath(_data_dir())
+    target_real = os.path.realpath(target_path)
+    return os.path.commonpath([base_real, target_real]) == base_real
 
 
 def _users_file_path():
@@ -200,6 +230,16 @@ def _sync_ntrs_registry(records):
     _save_ntrs_file(updated)
 
 
+
+def _load_physics_module():
+    try:
+        from Pages import combustion_physics
+        return combustion_physics
+    except ImportError:
+        import combustion_physics
+        return combustion_physics
+
+
 def _save_experiments_file(records, client=None):
     path = os.path.join(_data_dir(), "experiments.json")
     with open(path, "w", encoding="utf-8") as f:
@@ -211,6 +251,13 @@ def _save_experiments_file(records, client=None):
         except Exception:
             pass
     st.cache_data.clear()
+  
+    try:
+        phys = _load_physics_module()
+        res = phys.record_admin_change_and_retrain("Admin modified experiment records")
+        st.session_state["_last_retrain_status"] = res
+    except Exception:
+        pass
 
 
 def _verify_admin_credentials(email, password, client=None):
@@ -236,7 +283,9 @@ def _verify_admin_credentials(email, password, client=None):
         pass
     admin_email = admin_email or os.getenv("ADMIN_EMAIL", "admin@orbignite.org")
 
-    if password == admin_pw and (not email or email.strip().lower() == admin_email.strip().lower() or email.strip().lower() == "admin"):
+    
+    pw_match = hmac.compare_digest(str(password or ""), str(admin_pw or ""))
+    if pw_match and (not email or email.strip().lower() == admin_email.strip().lower() or email.strip().lower() == "admin"):
         return True, admin_email
     return False, None
 
@@ -271,6 +320,55 @@ def render_sidebar_auth():
             except Exception:
                 pass
             st.rerun()
+
+        
+        with st.expander("My Profile & Saved Scenarios", expanded=False):
+            phys = _load_physics_module()
+            saved_list = phys.load_user_scenarios(user)
+            state_info = phys.get_dataset_and_model_state()
+            latest_data_ts = state_info.get("last_admin_change_utc", "")
+            latest_model_ts = state_info.get("model_trained_at_utc", "")
+
+            if not saved_list:
+                st.caption("No saved fire scenarios yet. Save one from the Fire Predictor section.")
+            else:
+                st.caption(f"{len(saved_list)} scenario(s) synced to `{user}`")
+                for s_idx, scen in enumerate(saved_list):
+                    sid = scen.get("id", f"s{s_idx}")
+                    s_name = scen.get("name", "Untitled Scenario")
+                    s_rank = int(scen.get("user_rank", 3))
+                    scen_ver = scen.get("model_version_utc", "") or scen.get("evaluated_at_utc", "")
+                    is_stale = bool(
+                        (latest_data_ts and scen_ver < latest_data_ts)
+                        or (latest_model_ts and scen_ver < latest_model_ts)
+                    )
+                    with st.container(border=True):
+                        st.markdown(f"**{s_name}** (Rank `#{s_rank}`)")
+                        inp = scen.get("inputs", {})
+                        st.caption(
+                            f"{inp.get('gravity_g', 0.0):.2f}g | {inp.get('o2_pct', 21.0):.1f}% O₂ | "
+                            f"{scen.get('burn_duration_s', 0.0):.1f}s | `{scen.get('fire_regime', 'N/A')}`"
+                        )
+                        if is_stale:
+                            st.warning("New admin data added — rerun & update this scenario in Fire Predictor.")
+
+                        new_nm = st.text_input("Rename", value=s_name, key=f"prof_rn_{sid}_{s_idx}")
+                        new_rk = st.number_input("Rank (1–5)", min_value=1, max_value=5, value=s_rank, step=1, key=f"prof_rk_{sid}_{s_idx}")
+                        pc1, pc2, pc3 = st.columns(3)
+                        with pc1:
+                            if st.button("Load", key=f"prof_ld_{sid}_{s_idx}", use_container_width=True):
+                                st.session_state["_pending_scenario_load"] = inp
+                                st.session_state["show_admin_portal"] = False
+                                st.rerun()
+                        with pc2:
+                            if st.button("Save", key=f"prof_sv_{sid}_{s_idx}", use_container_width=True):
+                                phys.rename_user_scenario(user, sid, new_nm, new_rank=new_rk)
+                                st.success("Updated.")
+                                st.rerun()
+                        with pc3:
+                            if st.button("Delete", key=f"prof_dl_{sid}_{s_idx}", use_container_width=True):
+                                phys.delete_user_scenario(user, sid)
+                                st.rerun()
     else:
         st.caption("Access experimental controls or admin records.")
         with st.expander("Sign In / Sign Up", expanded=False):
@@ -477,7 +575,11 @@ def render_admin_portal():
                     })
                     _save_ntrs_file(ntrs_items)
                     st.cache_data.clear()
-                    st.success(f"Added {record_category} record '{exp_id}' to Resource Registry.")
+   
+                    phys = _load_physics_module()
+                    retrain_res = phys.record_admin_change_and_retrain(f"Admin added {record_category} record {exp_id}")
+                    st.session_state["_last_retrain_status"] = retrain_res
+                    st.success(f"Added {record_category} record '{exp_id}' and retrained fire prediction models.")
                     st.rerun()
 
     st.subheader("Delete Record or Manage Data Files")
@@ -504,44 +606,69 @@ def render_admin_portal():
         )
         uploaded = st.file_uploader("Upload Dataset / Resource File", type=["json", "csv", "pdf"])
         if uploaded is not None and st.button("Save Uploaded File"):
-            target = os.path.join(_data_dir(), uploaded.name)
-            with open(target, "wb") as out:
-                out.write(uploaded.getbuffer())
-            if uploaded.name.lower().endswith(".pdf"):
-                rtype_map = {
-                    "Experiment": "NASA Experiment / Guide",
-                    "Paper": "External Research Paper",
-                    "NTRS Report": "NTRS Technical Report",
-                    "Other": "Other",
-                }
-                stem = os.path.splitext(uploaded.name)[0]
-                is_ntrs_num = stem.isdigit() and upload_type == "NTRS Report"
-                ntrs_items = _load_ntrs_file()
-                if not any(item.get("pdf_file") == uploaded.name for item in ntrs_items):
-                    ntrs_items.append({
-                        "id": f"NTRS-{stem}" if is_ntrs_num else f"RES-{stem[:18].upper()}",
-                        "ntrs_id": stem if is_ntrs_num else "",
-                        "resource_type": rtype_map.get(upload_type, "Other"),
-                        "title": stem.replace("_", " ").replace("-", " "),
-                        "citation_url": f"https://ntrs.nasa.gov/citations/{stem}" if is_ntrs_num else "",
-                        "mission": upload_type,
-                        "fuel": "Uploaded Document",
-                        "year": 2025,
-                        "pdf_file": uploaded.name,
-                        "summary": f"Admin-uploaded {upload_type} document ({uploaded.name}).",
-                    })
-                    _save_ntrs_file(ntrs_items)
-            st.cache_data.clear()
-            st.success(f"Saved {uploaded.name} as '{upload_type}'.")
+            
+            safe_name = _sanitize_data_filename(uploaded.name)
+            raw_bytes = bytes(uploaded.getbuffer())
+            if not safe_name or safe_name in PROTECTED_DATA_FILES:
+                st.error("Blocked: Invalid or protected core system filename.")
+            elif len(raw_bytes) > 25 * 1024 * 1024:
+                st.error("Blocked: Uploaded file exceeds the 25 MB safety limit.")
+            else:
+                target = os.path.join(_data_dir(), safe_name)
+                if not _is_within_data_dir(target):
+                    st.error("Blocked: Path traversal detected.")
+                else:
+                    with open(target, "wb") as out:
+                        out.write(raw_bytes)
+                    if safe_name.lower().endswith(".pdf"):
+                        rtype_map = {
+                            "Experiment": "NASA Experiment / Guide",
+                            "Paper": "External Research Paper",
+                            "NTRS Report": "NTRS Technical Report",
+                            "Other": "Other",
+                        }
+                        stem = os.path.splitext(safe_name)[0]
+                        is_ntrs_num = stem.isdigit() and upload_type == "NTRS Report"
+                        ntrs_items = _load_ntrs_file()
+                        if not any(item.get("pdf_file") == safe_name for item in ntrs_items):
+                            ntrs_items.append({
+                                "id": f"NTRS-{stem}" if is_ntrs_num else f"RES-{stem[:18].upper()}",
+                                "ntrs_id": stem if is_ntrs_num else "",
+                                "resource_type": rtype_map.get(upload_type, "Other"),
+                                "title": stem.replace("_", " ").replace("-", " "),
+                                "citation_url": f"https://ntrs.nasa.gov/citations/{stem}" if is_ntrs_num else "",
+                                "mission": upload_type,
+                                "fuel": "Uploaded Document",
+                                "year": 2025,
+                                "pdf_file": safe_name,
+                                "summary": f"Admin-uploaded {upload_type} document ({safe_name}).",
+                            })
+                            _save_ntrs_file(ntrs_items)
+                    st.cache_data.clear()
+  
+                    phys = _load_physics_module()
+                    retrain_res = phys.record_admin_change_and_retrain(f"Admin uploaded file {safe_name}")
+                    st.session_state["_last_retrain_status"] = retrain_res
+                    st.success(f"Saved {safe_name} as '{upload_type}' and retrained fire prediction models.")
 
-        data_files = sorted(os.listdir(_data_dir()))
+
+        data_files = sorted(
+            f for f in os.listdir(_data_dir())
+            if os.path.isfile(os.path.join(_data_dir(), f)) and f not in PROTECTED_DATA_FILES
+        )
         if data_files:
             del_file = st.selectbox("Select Data File to Delete", data_files, key="del_file_select")
             if st.button("Delete Selected File"):
-                target = os.path.join(_data_dir(), del_file)
-                if os.path.exists(target):
+                
+                safe_del = _sanitize_data_filename(del_file)
+                target = os.path.join(_data_dir(), safe_del)
+                if safe_del and safe_del not in PROTECTED_DATA_FILES and _is_within_data_dir(target) and os.path.isfile(target):
                     os.remove(target)
-                    st.success(f"Removed {del_file}.")
+                    
+                    phys = _load_physics_module()
+                    retrain_res = phys.record_admin_change_and_retrain(f"Admin deleted data file {safe_del}")
+                    st.session_state["_last_retrain_status"] = retrain_res
+                    st.success(f"Removed {safe_del} and retrained fire prediction models.")
                     st.rerun()
 
     st.subheader("NTRS Document Registry Links")
@@ -552,10 +679,37 @@ def render_admin_portal():
         if st.button("Save NTRS Registry Changes"):
             updated_ntrs = edited_ntrs.dropna(how="all").to_dict(orient="records")
             _save_ntrs_file(updated_ntrs)
-            st.success("NTRS registry updated successfully.")
+            
+            phys = _load_physics_module()
+            retrain_res = phys.record_admin_change_and_retrain("Admin updated NTRS registry")
+            st.session_state["_last_retrain_status"] = retrain_res
+            st.success("NTRS registry updated and fire prediction models retrained.")
             st.rerun()
     else:
         st.caption("No NTRS links indexed yet.")
+
+
+    st.subheader("Model Retraining & Benchmark Status")
+    phys_state = _load_physics_module().get_dataset_and_model_state()
+    last_rt = st.session_state.get("_last_retrain_status")
+    if last_rt:
+        if last_rt.get("ok"):
+            st.success(f"Auto-retrain completed cleanly at `{last_rt.get('changed_at_utc', '')}`.")
+        else:
+            st.error(f"Auto-retrain warning: {last_rt.get('error', 'Unknown error')}")
+    st.caption(
+        f"Latest Model Build: `{phys_state.get('model_trained_at_utc', 'N/A')}` | "
+        f"Last Admin Dataset Change: `{phys_state.get('last_admin_change_utc') or 'None recorded yet'}`"
+    )
+    if st.button("Retrain Fire Models Now", key="adm_manual_retrain"):
+        with st.spinner("Retraining XGBoost fire prediction suite..."):
+            retrain_res = _load_physics_module().record_admin_change_and_retrain("Manual admin model retrain")
+            st.session_state["_last_retrain_status"] = retrain_res
+        if retrain_res.get("ok"):
+            st.success("Fire prediction models retrained and bundle updated.")
+        else:
+            st.error(f"Retrain failed: {retrain_res.get('error')}")
+        st.rerun()
 
     st.subheader("User Directory & Role Management")
     st.caption("Inspect registered researcher accounts and assign administrative or viewer roles.")

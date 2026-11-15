@@ -1,0 +1,42 @@
+{
+  "features": [
+    "gravity_g",
+    "oxygen_pct",
+    "pressure_atm",
+    "mission_enc",
+    "fuel_cat_enc"
+  ],
+  "mission_classes": [
+    "ACME-CFI-G",
+    "ACME-E-FIELD",
+    "BASS",
+    "DAFT & DAFT-2",
+    "FLEX",
+    "FLEX-2",
+    "SAME & SAME-R",
+    "Saffire-I",
+    "Saffire-IV",
+    "SoFIE-MIST"
+  ],
+  "fuel_cat_classes": [
+    "Aerosol & Wire Insulation",
+    "Cabin Particulates",
+    "Gaseous Fuel",
+    "Gaseous Fuel (Hyper-Oxic)",
+    "Liquid Droplet",
+    "Mixed Solids",
+    "Solid Fabric",
+    "Solid Polymer"
+  ],
+  "risk_classes": [
+    "CRITICAL",
+    "LOW",
+    "MODERATE"
+  ],
+  "metrics": {
+    "burn_duration_rmse": 158.7325851268339,
+    "burn_duration_r2": 0.7059646800865023,
+    "cool_flame_accuracy": 0.6666666666666666,
+    "safety_risk_accuracy": 0.6666666666666666
+  }
+}

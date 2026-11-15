@@ -241,6 +241,9 @@ def render(experiments_data):
         if not ntrs_link and ntrs_raw:
             ntrs_num = ntrs_raw.replace("NASA-NTRS-", "").replace("NTRS-", "").strip()
             ntrs_link = f"https://ntrs.nasa.gov/citations/{ntrs_num}" if ntrs_num.isdigit() else f"https://ntrs.nasa.gov/search?q={urllib.parse.quote(ntrs_raw)}"
+        
+        if ntrs_link and not ntrs_link.lower().startswith(("http://", "https://")):
+            ntrs_link = ""
 
         tier_color = TIER_COLORS.get(matched["threat_tier"], "#02BFE7")
         safe_name = html.escape(str(exp.get("name", "")))
@@ -270,11 +273,13 @@ def render(experiments_data):
                     f"EF: {matched['exposure_factor_EF']} | Lag: {matched['detection_lag_s']}s | Equation: {matched['equation_name']}"
                 )
             with c2:
+                
                 if ntrs_raw or ntrs_link:
-                    label = ntrs_raw or "NTRS Link"
-                    if ntrs_link:
+                    label = html.escape(str(ntrs_raw or "NTRS Link"))
+                    safe_href = html.escape(ntrs_link, quote=True) if ntrs_link and ntrs_link.lower().startswith(("http://", "https://")) else ""
+                    if safe_href:
                         st.markdown(
-                            f"<div style='text-align:right;'><a href='{ntrs_link}' target='_blank' rel='noopener noreferrer' style='color:#02BFE7; font-size:0.78rem; font-family:DMMono; text-decoration:none;'>{label}</a></div>",
+                            f"<div style='text-align:right;'><a href='{safe_href}' target='_blank' rel='noopener noreferrer' style='color:#02BFE7; font-size:0.78rem; font-family:DMMono; text-decoration:none;'>{label}</a></div>",
                             unsafe_allow_html=True,
                         )
                     else:

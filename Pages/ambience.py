@@ -1,4 +1,5 @@
-#Background ambient aurora atmosphere synced to active microgravity/planetary preset
+#Background ambient aurora atmosphere synced to active presets
+#Used SI for base aurora formation
 import streamlit as st
 
 
@@ -53,7 +54,6 @@ def render_ambience(preset_name=None):
 
     css = f"""
     <style>
-    /* Non-intrusive animated background aurora visible across both light and dark themes */
     .stApp,
     [data-testid="stAppViewContainer"],
     [data-testid="stAppViewBlockContainer"] {{

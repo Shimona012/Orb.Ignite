@@ -8,7 +8,7 @@ import smtplib
 import streamlit as st
 import Authentication
 
-#To be tried after the whole mock is done
+
 def _save_contact_message(payload):
     client = Authentication._get_supabase_client()
     if client is not None:
@@ -47,11 +47,15 @@ def _send_email_if_configured(name, email, message, receiver_email=None):
     if not smtp_email or not smtp_password or not receiver_email:
         return
     msg = EmailMessage()
-    msg["Subject"] = f"Orb.Ignite Contact: {name}"
+    clean_name = re.sub(r"[\r\n]+", " ", str(name or "")).strip()[:120]
+    clean_email = re.sub(r"[\r\n]+", "", str(email or "")).strip()[:180]
+    clean_receiver = re.sub(r"[\r\n]+", "", str(receiver_email or "")).strip()[:180]
+    clean_message = str(message or "").strip()[:5000]
+    msg["Subject"] = f"Orb.Ignite Contact: {clean_name}"
     msg["From"] = smtp_email
-    msg["To"] = receiver_email
-    msg["Reply-To"] = email
-    msg.set_content(f"From: {name} <{email}>\nTo: {receiver_email}\n\n{message}")
+    msg["To"] = clean_receiver
+    msg["Reply-To"] = clean_email
+    msg.set_content(f"From: {clean_name} <{clean_email}>\nTo: {clean_receiver}\n\n{clean_message}")
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
         server.login(smtp_email, smtp_password)
         server.send_message(msg)
@@ -85,21 +89,26 @@ def render():
                 if raw_rcv and not re.match(r"^[\w\.\+\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-\.]+$", raw_rcv):
                     st.error("Please enter a valid recipient email address or leave it blank.")
                 else:
-                    target_receiver = raw_rcv if raw_rcv else (default_rcv or "admin@orbignite.org")
-                    stored_receiver_label = raw_rcv if raw_rcv else "Orb.Ignite Project Mailbox (Direct)"
+                    
+                    safe_name = re.sub(r"[\r\n]+", " ", name.strip())[:120]
+                    safe_email = re.sub(r"[\r\n]+", "", email_clean)[:180]
+                    safe_rcv = re.sub(r"[\r\n]+", "", raw_rcv)[:180]
+                    safe_msg = message.strip()[:5000]
+                    target_receiver = safe_rcv if safe_rcv else (default_rcv or "admin@orbignite.org")
+                    stored_receiver_label = safe_rcv if safe_rcv else "Orb.Ignite Project Mailbox (Direct)"
                     payload = {
-                        "name": name.strip(),
-                        "email": email_clean,
+                        "name": safe_name,
+                        "email": safe_email,
                         "receiver": stored_receiver_label,
-                        "message": message.strip(),
+                        "message": safe_msg,
                         "created_at": datetime.now(timezone.utc).isoformat(),
                     }
                     _save_contact_message(payload)
                     try:
-                        _send_email_if_configured(name.strip(), email_clean, message.strip(), receiver_email=target_receiver)
+                        _send_email_if_configured(safe_name, safe_email, safe_msg, receiver_email=target_receiver)
                     except Exception:
                         pass
-                    if raw_rcv:
-                        st.success(f"Message forwarded successfully to {raw_rcv}.")
+                    if safe_rcv:
+                        st.success(f"Message forwarded successfully to {safe_rcv}.")
                     else:
                         st.success("Message sent securely to the Orb.Ignite Project Team.")

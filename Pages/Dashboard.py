@@ -1,4 +1,4 @@
-#Dashboard page, WIP, SI for markdown styling and data-ingestion. 
+#Dashboard page, SI for markdown styling and data-ingestion. 
 import streamlit as st
 import os
 import base64
@@ -14,9 +14,39 @@ import KnowledgeBase
 import contact_us
 import combustion_physics
 import ambience
+import importlib
+import sys
+
+def _reload_updated_modules():
+    mods = [
+        combustion_physics,
+        mission_catalog,
+        flame_lab,
+        fire_predictor,
+        research_assistant,
+        Music,
+        Authentication,
+        About,
+        KnowledgeBase,
+        contact_us,
+        ambience,
+    ]
+    tracked = st.session_state.setdefault("_module_mtimes", {})
+    for m in mods:
+        m_file = getattr(m, "__file__", None)
+        if m_file and os.path.exists(m_file):
+            mtime = os.path.getmtime(m_file)
+            prev = tracked.get(m.__name__)
+            if prev is None:
+                tracked[m.__name__] = mtime
+            elif mtime > prev:
+                importlib.reload(sys.modules[m.__name__])
+                tracked[m.__name__] = mtime
+
+_reload_updated_modules()
 
 
-#need to make hoverable carts for the bottom 3 buttons
+
 @st.dialog("Help / Metric Guide", width="large")
 def show_help_dialog():
     KnowledgeBase.render()
@@ -78,7 +108,7 @@ st.markdown(
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }}
 
-    /* Tighten top padding so title above tabs doesn't push content down */
+
     .block-container {{
         padding-top: 1.5rem !important;
         padding-bottom: 1.5rem !important;
@@ -99,7 +129,7 @@ st.markdown(
         background-color: transparent;
     }}
 
-    /* Compact Orb.Ignite Title above Tabs */
+
     .orb-topbar {{
         display: flex;
         align-items: baseline;
@@ -125,7 +155,7 @@ st.markdown(
         letter-spacing: 0.06em;
     }}
 
-    /* Tabs */
+
     .orb-section-nav {{
         position: -webkit-sticky;
         position: sticky;
@@ -305,3 +335,5 @@ else:
                     About.render()
                 elif active_view == "contact":
                     contact_us.render()
+
+

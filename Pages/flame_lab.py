@@ -114,6 +114,9 @@ def render():
             f"**Regime:** {state['regime_label']}"
         )
         st.caption(state["optical_regime_desc"])
+        
+        if gravity > 0.05 or oxygen > 30.0 or ventilation > 20.0 or area_m2 > 2.5:
+            st.caption("Hybrid XGBoost + NASA Physics Coupling Active: Partial-gravity and scale effects are coupled with the trained XGBoost fire model suite.")
 
     with col2:
         X, Y, Z, intensity = compute_field(gravity, oxygen, ventilation, state["morphology_params"])

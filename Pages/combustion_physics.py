@@ -1,12 +1,16 @@
 #SI genereated document based on human research but haphazard compilation of NASA microgravity combustion experiments.
 #Left to be human-audited and edited for clarity, accuracy, and completeness.
+import html
 import json
 import math
 import os
 import numpy as np
 import pandas as pd
 import streamlit as st
-
+from datetime import datetime, timezone
+import subprocess
+import sys
+import uuid
 SIGMA_SB = 5.6704e-8
 R_UNIV = 8.314462
 
@@ -1235,6 +1239,9 @@ def get_cached_mission_catalog_info(experiments_data, area_m2=1.0):
                 if ntrs_num.isdigit()
                 else f"https://ntrs.nasa.gov/search?q={ntrs_raw}"
             )
+        
+        if ntrs_link and not ntrs_link.lower().startswith(("http://", "https://")):
+            ntrs_link = ""
 
         investigator = exp.get("investigator") or "NASA Glenn / Principal Investigator Team"
         hardware_facility = exp.get("hardware_facility") or exp.get("platform") or "ISS / Cygnus Test Facility"
@@ -1243,11 +1250,16 @@ def get_cached_mission_catalog_info(experiments_data, area_m2=1.0):
         extinction_mech = exp.get("extinction_mechanism") or prof["suppression"]
         safety_insight = exp.get("spacecraft_safety_insight") or prof["prevention"]
 
+
+        safe_mission = html.escape(str(exp.get("mission", "")))
+        safe_facility = html.escape(str(hardware_facility))
+        safe_pi = html.escape(str(investigator))
+        safe_pillars = html.escape(str(three_pillars))
         hover_html = (
-            f"<b>{exp.get('mission', '')} | {hardware_facility}</b><br/>"
-            f"<b>PI:</b> {investigator}<br/>"
+            f"<b>{safe_mission} | {safe_facility}</b><br/>"
+            f"<b>PI:</b> {safe_pi}<br/>"
             f"<b>Env:</b> {g:.2f}g | {o2:.1f}% O₂ | {p:.2f} atm | Burn: {burn_s:.1f}s<br/>"
-            f"<b>Pillar:</b> {three_pillars} | <b>Threat:</b> {matched['threat_score']}/100 ({matched['threat_tier']})"
+            f"<b>Pillar:</b> {safe_pillars} | <b>Threat:</b> {matched['threat_score']}/100 ({matched['threat_tier']})"
         )
 
         cached[exp_id] = {
@@ -1287,3 +1299,214 @@ def get_cached_mission_catalog_info(experiments_data, area_m2=1.0):
             "hover_summary_html": hover_html,
         }
     return cached
+
+
+
+
+
+
+#Used SI for model related technicalities and dynamic training
+def _data_dir_path():
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Data")
+
+
+
+def _models_dir_path():
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models")
+
+
+
+def get_dataset_and_model_state():
+    data_state_path = os.path.join(_data_dir_path(), "dataset_state.json")
+    report_path = os.path.join(_models_dir_path(), "training_evaluation_report.json")
+    bundle_path = os.path.join(_models_dir_path(), "orb_ignite_fire_models.joblib")
+
+    last_admin_change_utc = ""
+    last_change_reason = ""
+    if os.path.exists(data_state_path):
+        try:
+            with open(data_state_path, "r", encoding="utf-8") as f:
+                ds_info = json.load(f)
+            last_admin_change_utc = ds_info.get("last_admin_change_utc", "")
+            last_change_reason = ds_info.get("reason", "")
+        except Exception:
+            pass
+
+    model_trained_at_utc = ""
+    benchmarks = {}
+    if os.path.exists(report_path):
+        try:
+            with open(report_path, "r", encoding="utf-8") as f:
+                rep = json.load(f)
+            model_trained_at_utc = rep.get("generated_at_utc", "")
+            benchmarks = rep.get("models", {})
+            benchmarks["_psi117_validation"] = rep.get("psi117_validation", {})
+        except Exception:
+            pass
+
+    bundle_mtime = os.path.getmtime(bundle_path) if os.path.exists(bundle_path) else 0.0
+    if not model_trained_at_utc and bundle_mtime > 0:
+        model_trained_at_utc = datetime.fromtimestamp(bundle_mtime, tz=timezone.utc).isoformat()
+
+    return {
+        "last_admin_change_utc": last_admin_change_utc,
+        "last_change_reason": last_change_reason,
+        "model_trained_at_utc": model_trained_at_utc,
+        "bundle_mtime": bundle_mtime,
+        "benchmarks": benchmarks,
+    }
+
+
+
+def record_admin_change_and_retrain(reason="Admin dataset or file update"):
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    data_state_path = os.path.join(_data_dir_path(), "dataset_state.json")
+    now_utc = datetime.now(timezone.utc).isoformat()
+    try:
+        with open(data_state_path, "w", encoding="utf-8") as f:
+            json.dump({"last_admin_change_utc": now_utc, "reason": reason}, f, indent=2)
+    except Exception:
+        pass
+
+    retrain_ok = False
+    retrain_err = ""
+    try:
+        if base_dir not in sys.path:
+            sys.path.insert(0, base_dir)
+        import train_fire_models
+        train_fire_models.main()
+        retrain_ok = True
+    except Exception as exc:
+        retrain_err = str(exc)
+        try:
+            train_script = os.path.join(base_dir, "train_fire_models.py")
+            res = subprocess.run(
+                [sys.executable, train_script],
+                cwd=base_dir,
+                capture_output=True,
+                text=True,
+                timeout=180,
+            )
+            retrain_ok = (res.returncode == 0)
+            if not retrain_ok:
+                retrain_err = res.stderr or res.stdout
+        except Exception as sub_exc:
+            retrain_err = str(sub_exc)
+
+    try:
+        st.cache_data.clear()
+        st.cache_resource.clear()
+    except Exception:
+        pass
+
+    return {"ok": retrain_ok, "error": retrain_err, "changed_at_utc": now_utc}
+
+
+
+def _saved_scenarios_path():
+    return os.path.join(_data_dir_path(), "saved_scenarios.json")
+
+
+
+def _read_all_saved_scenarios():
+    p = _saved_scenarios_path()
+    if os.path.exists(p):
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                return data
+        except Exception:
+            pass
+    return {}
+
+
+
+def _write_all_saved_scenarios(data):
+    p = _saved_scenarios_path()
+    try:
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except Exception:
+        pass
+
+
+
+def load_user_scenarios(email):
+    if not email:
+        return []
+    key = email.strip().lower()
+    all_data = _read_all_saved_scenarios()
+    items = all_data.get(key, [])
+    return items if isinstance(items, list) else []
+
+
+
+def save_user_scenario(email, scenario_record):
+    if not email:
+        return None
+    key = email.strip().lower()
+    all_data = _read_all_saved_scenarios()
+    items = all_data.get(key, [])
+    if not isinstance(items, list):
+        items = []
+
+    rec = dict(scenario_record)
+    if not rec.get("id"):
+        rec["id"] = str(uuid.uuid4())[:8]
+    now_utc = datetime.now(timezone.utc).isoformat()
+    rec.setdefault("created_at_utc", now_utc)
+    rec["updated_at_utc"] = now_utc
+
+    replaced = False
+    for i, existing in enumerate(items):
+        if existing.get("id") == rec["id"]:
+            items[i] = rec
+            replaced = True
+            break
+    if not replaced:
+        items.insert(0, rec)
+
+    all_data[key] = items
+    _write_all_saved_scenarios(all_data)
+    return rec
+
+
+
+def rename_user_scenario(email, scenario_id, new_name, new_rank=None):
+    if not email or not scenario_id:
+        return False
+    key = email.strip().lower()
+    all_data = _read_all_saved_scenarios()
+    items = all_data.get(key, [])
+    changed = False
+    for item in items:
+        if item.get("id") == scenario_id:
+            if new_name is not None and str(new_name).strip():
+                item["name"] = str(new_name).strip()
+                changed = True
+            if new_rank is not None:
+                item["user_rank"] = int(new_rank)
+                changed = True
+            item["updated_at_utc"] = datetime.now(timezone.utc).isoformat()
+            break
+    if changed:
+        all_data[key] = items
+        _write_all_saved_scenarios(all_data)
+    return changed
+
+
+
+def delete_user_scenario(email, scenario_id):
+    if not email or not scenario_id:
+        return False
+    key = email.strip().lower()
+    all_data = _read_all_saved_scenarios()
+    items = all_data.get(key, [])
+    remaining = [item for item in items if item.get("id") != scenario_id]
+    if len(remaining) != len(items):
+        all_data[key] = remaining
+        _write_all_saved_scenarios(all_data)
+        return True
+    return False
+
