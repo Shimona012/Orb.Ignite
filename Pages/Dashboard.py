@@ -689,7 +689,10 @@ with st.sidebar:
         """,
         unsafe_allow_html=True,
     )
-    st.markdown("### Orb.Ignite")
+    st.markdown(
+        '<h3 style="font-style: italic !important; font-weight: 500 !important; margin: 0 0 0.5rem 0; font-size: 1.45rem;">Orb.Ignite</h3>',
+        unsafe_allow_html=True,
+    )
     st.divider()
     scenario_preset = st.selectbox(
         "Environment Preset",
