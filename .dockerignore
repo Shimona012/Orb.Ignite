@@ -11,4 +11,3 @@ venv/
 .venv/
 .idea/
 .vscode/
-Data/*.pdf

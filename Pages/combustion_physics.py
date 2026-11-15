@@ -1,5 +1,4 @@
 #SI genereated document based on human research but haphazard compilation of NASA microgravity combustion experiments.
-#Left to be human-audited and edited for clarity, accuracy, and completeness.
 import html
 import json
 import math

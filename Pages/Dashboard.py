@@ -387,6 +387,103 @@ st.markdown(
             padding: 10px 16px !important;
         }
     }
+
+    /* Sidebar Top-Left Stars Cluster */
+    .orb-sidebar-stars-wrap {
+        padding: 0.85rem 0 1.5rem 4px;
+        margin-bottom: 0.25rem;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        pointer-events: none;
+        user-select: none;
+    }
+    .orb-stars-cluster {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        position: relative;
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
+    }
+    .orb-star {
+        display: inline-block;
+        flex-shrink: 0;
+        transform-origin: center center;
+        transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, fill 0.25s ease, filter 0.25s ease;
+    }
+
+    /* Distinct rotations and subtle vertical offset */
+    .orb-star.star-1 {
+        --base-rot: 14deg;
+        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(14deg);
+        margin-top: 0px;
+    }
+    .orb-star.star-2 {
+        --base-rot: -22deg;
+        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-22deg);
+        margin-top: -3px;
+    }
+    .orb-star.star-3 {
+        --base-rot: 38deg;
+        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(38deg);
+        margin-top: 2px;
+    }
+    .orb-star.star-4 {
+        --base-rot: -12deg;
+        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-12deg);
+        margin-top: -2px;
+    }
+    .orb-star.star-5 {
+        --base-rot: 50deg;
+        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(50deg);
+        margin-top: 3px;
+    }
+    .orb-star.star-6 {
+        --base-rot: -35deg;
+        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-35deg);
+        margin-top: -4px;
+    }
+
+    /* Stars "go in" (collapse inward) when pulled down or tucking */
+    .orb-cord-pulling .orb-star,
+    .orb-stars-tuck .orb-star,
+    body.orb-cord-pulling .orb-star,
+    body.orb-stars-tuck .orb-star,
+    html.orb-cord-pulling .orb-star,
+    html.orb-stars-tuck .orb-star {
+        transform: scale(0.02) rotate(calc(var(--base-rot, 0deg) + 160deg)) !important;
+        opacity: 0 !important;
+    }
+    .orb-cord-pulling .orb-stars-cluster,
+    .orb-stars-tuck .orb-stars-cluster,
+    body.orb-cord-pulling .orb-stars-cluster,
+    body.orb-stars-tuck .orb-stars-cluster,
+    html.orb-cord-pulling .orb-stars-cluster,
+    html.orb-stars-tuck .orb-stars-cluster {
+        transform: scale(0.18) !important;
+        opacity: 0 !important;
+    }
+
+    /* Star colors: White with glow for dark theme */
+    .orb-star,
+    [data-theme="dark"] .orb-star,
+    .stApp[data-theme="dark"] .orb-star,
+    [data-base-theme="dark"] .orb-star {
+        fill: #FFFFFF !important;
+        color: #FFFFFF !important;
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.45)) !important;
+        opacity: 0.96;
+    }
+
+    /* Star colors: Gray / Black for light theme */
+    [data-theme="light"] .orb-star,
+    .stApp[data-theme="light"] .orb-star,
+    [data-base-theme="light"] .orb-star {
+        fill: #1E293B !important;
+        color: #1E293B !important;
+        filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.28)) !important;
+        opacity: 0.92;
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -410,6 +507,21 @@ combustion_physics.ensure_preset_state()
 
 
 with st.sidebar:
+    st.markdown(
+        """
+        <div class="orb-sidebar-stars-wrap" aria-hidden="true">
+            <div class="orb-stars-cluster">
+                <svg class="orb-star star-1" viewBox="0 0 24 24" width="20" height="20" aria-label="Flare star"><path d="M12 1 C12 7.5 7.5 12 1 12 C7.5 12 12 16.5 12 23 C12 16.5 16.5 12 23 12 C16.5 12 12 7.5 12 1 Z"/></svg>
+                <svg class="orb-star star-2" viewBox="0 0 24 24" width="15" height="15" aria-label="Classic star"><polygon points="12,1.5 15.1,8.3 22.5,9.2 17,14.3 18.5,21.7 12,18 5.5,21.7 7,14.3 1.5,9.2 8.9,8.3"/></svg>
+                <svg class="orb-star star-3" viewBox="0 0 24 24" width="18" height="18" aria-label="Eight-point burst"><path d="M12 1 L14 7 L21 5 L17 11 L23 12 L17 13 L21 19 L14 17 L12 23 L10 17 L3 19 L7 13 L1 12 L7 11 L3 5 L10 7 Z"/></svg>
+                <svg class="orb-star star-4" viewBox="0 0 24 24" width="13" height="13" aria-label="Diamond star"><path d="M12 1 L14.5 10 L23 12 L14.5 14 L12 23 L9.5 14 L1 12 L9.5 10 Z"/></svg>
+                <svg class="orb-star star-5" viewBox="0 0 24 24" width="17" height="17" aria-label="Six-point star"><polygon points="12,1.5 14.8,7.5 21.5,7.5 16.5,12 18.5,18.5 12,15 5.5,18.5 7.5,12 2.5,7.5 9.2,7.5"/></svg>
+                <svg class="orb-star star-6" viewBox="0 0 24 24" width="11" height="11" aria-label="Glint star"><path d="M12 2 Q12 12 2 12 Q12 12 12 22 Q12 12 22 12 Q12 12 12 2 Z"/></svg>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     st.markdown("### Orb.Ignite")
     st.divider()
     scenario_preset = st.selectbox(
@@ -497,30 +609,62 @@ components.html(
             let y0 = null;
             let dy = 0;
 
+            const triggerTuck = () => {
+                try {
+                    doc.body.classList.add('orb-stars-tuck');
+                    doc.documentElement.classList.add('orb-stars-tuck');
+                    setTimeout(() => {
+                        doc.body.classList.remove('orb-stars-tuck');
+                        doc.documentElement.classList.remove('orb-stars-tuck');
+                    }, 450);
+                } catch (_) {}
+            };
+
             const rest = () => {
                 y0 = null;
                 ch.style.transition = '';
                 ch.style.setProperty('--pull', '0px');
+                try {
+                    doc.documentElement.style.setProperty('--cord-pull', '0');
+                    doc.body.classList.remove('orb-cord-pulling');
+                    doc.documentElement.classList.remove('orb-cord-pulling');
+                } catch (_) {}
             };
             pc.onpointerdown = (e) => {
                 y0 = e.clientY;
                 dy = 0;
                 try { pc.setPointerCapture(e.pointerId); } catch (_) {}
                 ch.style.transition = 'none';
+                try {
+                    doc.body.classList.add('orb-cord-pulling');
+                    doc.documentElement.classList.add('orb-cord-pulling');
+                } catch (_) {}
             };
             pc.onpointermove = (e) => {
                 if (y0 === null) return;
                 dy = Math.max(0, Math.min(90, e.clientY - y0));
                 ch.style.setProperty('--pull', dy + 'px');
+                const ratio = Math.min(1, dy / 45);
+                try {
+                    doc.documentElement.style.setProperty('--cord-pull', ratio.toFixed(3));
+                } catch (_) {}
             };
             pc.onpointerup = () => {
                 if (y0 === null) return;
                 const go = dy >= 22 || dy < 4;
                 rest();
-                if (go) flip();
+                if (go) {
+                    triggerTuck();
+                    flip();
+                }
             };
             pc.onpointercancel = rest;
-            pc.onclick = (e) => { if (e.detail === 0) flip(); };
+            pc.onclick = (e) => {
+                if (e.detail === 0) {
+                    triggerTuck();
+                    flip();
+                }
+            };
         }
 
         applyTheme(getTheme());
