@@ -8,6 +8,213 @@ import streamlit as st
 SIGMA_SB = 5.6704e-8
 R_UNIV = 8.314462
 
+PRESET_OPTIONS = [
+    "ISS Microgravity (0g)",
+    "Lunar Gateway (0.16g)",
+    "Mars Habitat (0.38g)",
+    "Earth Lab (1.0g)",
+    "Custom",
+]
+
+PRESET_CONFIGS = {
+    "ISS Microgravity (0g)": {"g": 0.00, "o2": 21.0, "flow": 0.0, "p": 1.00, "area": 1.0},
+    "Lunar Gateway (0.16g)": {"g": 0.16, "o2": 23.0, "flow": 2.0, "p": 0.82, "area": 1.0},
+    "Mars Habitat (0.38g)": {"g": 0.38, "o2": 25.0, "flow": 5.0, "p": 0.70, "area": 1.0},
+    "Earth Lab (1.0g)": {"g": 1.00, "o2": 20.9, "flow": 0.0, "p": 1.00, "area": 1.0},
+}
+
+
+def ensure_preset_state():
+    if "shared_env_preset" not in st.session_state:
+        st.session_state["shared_env_preset"] = "ISS Microgravity (0g)"
+    preset = st.session_state["shared_env_preset"]
+    cfg = PRESET_CONFIGS.get(preset, PRESET_CONFIGS["ISS Microgravity (0g)"])
+
+    for k in ("sidebar_env_preset", "fl_env_preset", "fp_env_preset"):
+        if k not in st.session_state:
+            st.session_state[k] = preset
+
+    defaults = {
+        "fl_g": float(cfg["g"]),
+        "fl_o2": float(cfg["o2"]),
+        "fl_flow": float(cfg["flow"]),
+        "fl_area": float(cfg["area"]),
+        "fp_g": float(cfg["g"]),
+        "fp_o2": float(cfg["o2"]),
+        "fp_flow": float(cfg["flow"]),
+        "fp_p": float(cfg["p"]),
+        "fp_area": float(cfg["area"]),
+    }
+    for k, val in defaults.items():
+        if k not in st.session_state:
+            st.session_state[k] = val
+
+
+def on_preset_change(source_key):
+    new_preset = st.session_state.get(source_key, "ISS Microgravity (0g)")
+    st.session_state["shared_env_preset"] = new_preset
+    for k in ("sidebar_env_preset", "fl_env_preset", "fp_env_preset"):
+        st.session_state[k] = new_preset
+
+    if new_preset in PRESET_CONFIGS:
+        cfg = PRESET_CONFIGS[new_preset]
+        st.session_state["fl_g"] = float(cfg["g"])
+        st.session_state["fl_o2"] = float(cfg["o2"])
+        st.session_state["fl_flow"] = float(cfg["flow"])
+        st.session_state["fl_area"] = float(cfg["area"])
+        st.session_state["fp_g"] = float(cfg["g"])
+        st.session_state["fp_o2"] = float(cfg["o2"])
+        st.session_state["fp_flow"] = float(cfg["flow"])
+        st.session_state["fp_p"] = float(cfg["p"])
+        st.session_state["fp_area"] = float(cfg["area"])
+
+
+def on_slider_change_to_custom(prefix=None):
+    st.session_state["shared_env_preset"] = "Custom"
+    for k in ("sidebar_env_preset", "fl_env_preset", "fp_env_preset"):
+        st.session_state[k] = "Custom"
+
+
+def _hex_to_rgb(hex_str):
+    h = hex_str.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def _rgb_to_hex(rgb):
+    return "#{:02X}{:02X}{:02X}".format(
+        max(0, min(255, int(round(rgb[0])))),
+        max(0, min(255, int(round(rgb[1])))),
+        max(0, min(255, int(round(rgb[2])))),
+    )
+
+
+def _blend_colorscales(scale_a, scale_b, alpha):
+    a = max(0.0, min(1.0, float(alpha)))
+    stops = [0.0, 0.25, 0.50, 0.78, 1.0]
+
+    def _sample(scale, pos):
+        pts = sorted(scale, key=lambda item: item[0])
+        if pos <= pts[0][0]:
+            return _hex_to_rgb(pts[0][1])
+        if pos >= pts[-1][0]:
+            return _hex_to_rgb(pts[-1][1])
+        for idx in range(len(pts) - 1):
+            p0, c0 = pts[idx]
+            p1, c1 = pts[idx + 1]
+            if p0 <= pos <= p1:
+                t = (pos - p0) / max(1e-6, p1 - p0)
+                r0, r1 = _hex_to_rgb(c0), _hex_to_rgb(c1)
+                return tuple(r0[c] * (1.0 - t) + r1[c] * t for c in range(3))
+        return _hex_to_rgb(pts[-1][1])
+
+    blended = []
+    for s in stops:
+        ca = _sample(scale_a, s)
+        cb = _sample(scale_b, s)
+        rgb = tuple(ca[c] * (1.0 - a) + cb[c] * a for c in range(3))
+        blended.append([s, _rgb_to_hex(rgb)])
+    return blended
+
+
+def get_dynamic_flame_colorscale(exp_key, fuel_type, g, o2_pct, flow_cm_s, is_cool_flame, is_extinguished, mode="optical"):
+    fuel_lower = (fuel_type or "").lower()
+
+    if is_extinguished:
+        return [
+            [0.0, "#111827"],
+            [0.35, "#374151"],
+            [0.70, "#4B5563"],
+            [1.0, "#6B7280"],
+        ]
+
+    if is_cool_flame:
+        return [
+            [0.0, "#090D16"],
+            [0.32, "#1E1B4B"],
+            [0.65, "#3B82F6"],
+            [0.88, "#60A5FA"],
+            [1.0, "#BFDBFE"],
+        ]
+
+    if mode == "temp":
+        thermal_base = [
+            [0.0, "#450A0A"],
+            [0.25, "#B91C1C"],
+            [0.52, "#F97316"],
+            [0.78, "#FACC15"],
+            [1.0, "#FFFBEB"],
+        ]
+        thermal_hyper = [
+            [0.0, "#7C2D12"],
+            [0.25, "#DC2626"],
+            [0.55, "#FB923C"],
+            [0.82, "#FEF08A"],
+            [1.0, "#FFFFFF"],
+        ]
+        hyper_factor = max(0.0, min(1.0, (o2_pct - 21.0) / 14.0))
+        return _blend_colorscales(thermal_base, thermal_hyper, hyper_factor)
+
+    is_clean_alcohol_h2 = (
+        "methanol" in fuel_lower
+        or "hydrogen" in fuel_lower
+        or "h2-air" in fuel_lower
+        or exp_key == "SOFBALL"
+    )
+    is_smoulder_dust = exp_key in ("SAME", "DAFT")
+
+    if is_smoulder_dust and g < 0.45:
+        return EXPERIMENT_PROFILES[exp_key]["hot_colorscale"]
+
+    earth_sooting_luminous = [
+        [0.0, "#450A0A"],
+        [0.22, "#991B1B"],
+        [0.48, "#EA580C"],
+        [0.75, "#FACC15"],
+        [1.0, "#FFFBEB"],
+    ]
+    earth_clean_alcohol = [
+        [0.0, "#1E3A8A"],
+        [0.30, "#38BDF8"],
+        [0.65, "#F59E0B"],
+        [1.0, "#FEF3C7"],
+    ]
+
+    microg_clean_blue = [
+        [0.0, "#0B192C"],
+        [0.32, "#0284C7"],
+        [0.66, "#38BDF8"],
+        [0.88, "#BAE6FD"],
+        [1.0, "#F0F9FF"],
+    ]
+    microg_soot_shell = [
+        [0.0, "#0F172A"],
+        [0.26, "#0284C7"],
+        [0.56, "#EA580C"],
+        [0.82, "#FACC15"],
+        [1.0, "#FEF08A"],
+    ]
+
+    # Soot formation in 0g increases cleanly with O2 enrichment, flow supply, or heavy hydrocarbons
+    is_low_flow_sofie = (exp_key == "SOFIE" and flow_cm_s < 8.0 and o2_pct < 24.0)
+    soot_propensity = 0.0 if (is_clean_alcohol_h2 or is_low_flow_sofie) else 0.72
+    if not is_clean_alcohol_h2:
+        soot_propensity += max(0.0, (o2_pct - 21.0) / 14.0) * 0.28 + max(0.0, (flow_cm_s - 4.0) / 16.0) * 0.20
+    else:
+        soot_propensity += max(0.0, (o2_pct - 26.0) / 18.0) * 0.35
+    soot_propensity = max(0.0, min(1.0, soot_propensity))
+
+    zero_g_scale = _blend_colorscales(microg_clean_blue, microg_soot_shell, soot_propensity)
+    high_g_scale = earth_clean_alcohol if is_clean_alcohol_h2 else earth_sooting_luminous
+
+    if g <= 0.04:
+        return zero_g_scale
+    if g >= 0.45:
+        return high_g_scale
+
+    # Smooth partial-gravity transition between 0g spherical diffusion and >=0.45g buoyant plume
+    buoyancy_blend = (g - 0.04) / (0.45 - 0.04)
+    return _blend_colorscales(zero_g_scale, high_g_scale, buoyancy_blend)
+
 FUEL_TYPES = [
     "n-Heptane / n-Octane (Liquid Droplet — FLEX / FLEX-2)",
     "n-Decane / n-Dodecane (Heavy Alkane Droplet — FLEX-2)",
@@ -804,18 +1011,48 @@ def evaluate_combustion_state(fuel_type, g, o2_pct, flow_cm_s, pressure_atm=1.0,
         temp_scale *= 0.35
         size_factor *= 0.55
 
-    colorscale = prof["cool_colorscale"] if is_cool_flame else prof["hot_colorscale"]
+    colorscale = get_dynamic_flame_colorscale(
+        exp_key, fuel_type, g, o2_pct, flow_cm_s, is_cool_flame, is_extinguished, mode="optical"
+    )
+    temp_colorscale = get_dynamic_flame_colorscale(
+        exp_key, fuel_type, g, o2_pct, flow_cm_s, is_cool_flame, is_extinguished, mode="temp"
+    )
 
     if is_extinguished:
         regime_label = "Radiative Quenching / Near-Extinction"
+        optical_regime_desc = (
+            f"Radiative Extinction Regime ({g:.2f}g): Heat losses exceed heat release under oxygen starvation/low flow, yielding a dim residual smoke plume."
+        )
     elif is_cool_flame:
         regime_label = "Low-Temperature Cool Flame (500–800 K, CH₂O* UV/Blue)"
+        optical_regime_desc = (
+            f"Microgravity Cool Flame Regime ({g:.2f}g): Buoyancy absence stabilizes ~600 K spherical formaldehyde (CH₂O*) UV/blue chemiluminescence."
+        )
+    elif g >= 0.45:
+        regime_label = "Earth Buoyant Stretched Teardrop Flame" if g >= 0.85 else "High-Gravity Buoyant Teardrop Flame"
+        if "methanol" in (fuel_type or "").lower() or "hydrogen" in (fuel_type or "").lower() or exp_key == "SOFBALL":
+            optical_regime_desc = (
+                f"Earth/High-G Clean Fuel Buoyancy ({g:.2f}g): Upward natural convection produces a pale-blue base with warm amber-yellow tip."
+            )
+        else:
+            optical_regime_desc = (
+                f"Earth/High-G Buoyant Soot-Luminous Regime ({g:.2f}g): Strong upward natural convection creates a stretched teardrop plume with incandescent yellow-orange soot emission."
+            )
+    elif g >= 0.08:
+        regime_label = "Partial-Gravity Mixed Buoyant-Diffusive Plume"
+        optical_regime_desc = (
+            f"Partial-Gravity Transition ({g:.2f}g): Weak buoyant convection tilts and elongates the plume from a blue reaction base toward luminous amber-orange soot."
+        )
     elif g < 0.05 and flow_cm_s < 2.0:
         regime_label = "Microgravity Diffusion Sphere (Zero Buoyancy)"
-    elif 0.08 <= g <= 0.42:
-        regime_label = "Partial-Gravity Mixed Buoyant-Diffusive Plume"
+        optical_regime_desc = (
+            f"Microgravity Diffusion-Dominated Regime ({g:.2f}g): Absence of buoyancy yields a spherical reaction zone governed by molecular diffusion and soot/O₂ chemistry."
+        )
     else:
-        regime_label = "Buoyancy / Forced-Flow Stretched Teardrop Flame"
+        regime_label = "Forced-Flow Microgravity Stretched Flame"
+        optical_regime_desc = (
+            f"Microgravity Forced-Convection Regime ({g:.2f}g, {flow_cm_s:.1f} cm/s): Cabin airflow replaces buoyancy to transport O₂ and elongate the flame downstream."
+        )
 
     return {
         "exp_key": exp_key,
@@ -827,6 +1064,8 @@ def evaluate_combustion_state(fuel_type, g, o2_pct, flow_cm_s, pressure_atm=1.0,
         "equation_latex": prof["equation_latex"],
         "metrics": metrics,
         "colorscale": colorscale,
+        "temp_colorscale": temp_colorscale,
+        "optical_regime_desc": optical_regime_desc,
         "is_cool_flame": is_cool_flame,
         "is_extinguished": is_extinguished,
         "regime_label": regime_label,
@@ -867,6 +1106,10 @@ def match_catalog_record(exp_record, area_m2=None):
         key = "SAME"
     elif "DAFT" in mission:
         key = "DAFT"
+    elif "FLARE" in mission:
+        key = "FLARE"
+    elif "SOFBALL" in mission:
+        key = "SOFBALL"
     else:
         key, _, _ = detect_experiment_category(fuel_name, g, o2, flow, p)
 
@@ -888,6 +1131,7 @@ def match_catalog_record(exp_record, area_m2=None):
     area_info = threat["area_scaling"]
 
     return {
+        "exp_key": key,
         "code": prof["code"],
         "equation_name": prof["equation_name"],
         "equation_latex": prof["equation_latex"],
@@ -901,3 +1145,85 @@ def match_catalog_record(exp_record, area_m2=None):
         "exposure_factor_EF": threat["exposure_factor_EF"],
         "detection_lag_s": threat["detection_lag_s"],
     }
+
+
+@st.cache_data
+def get_cached_mission_catalog_info(experiments_data, area_m2=1.0):
+    cached = {}
+    for idx, exp in enumerate(experiments_data or []):
+        exp_id = str(exp.get("id") or f"EXP-{idx}")
+        matched = match_catalog_record(exp, area_m2=area_m2)
+        exp_key = matched.get("exp_key", "FLEX")
+        prof = EXPERIMENT_PROFILES.get(exp_key, EXPERIMENT_PROFILES["FLEX"])
+
+        g = float(exp.get("gravity_g", 0.0))
+        o2 = float(exp.get("oxygen_pct", 21.0))
+        p = float(exp.get("pressure_atm", 1.0))
+        flow = float(exp.get("flow_cm_s", prof.get("ref_flow", 5.0)))
+        burn_s = float(exp.get("burn_duration_s", 0.0))
+
+        flex_m = calc_flex_droplet(g, o2, flow)
+        saf_m = calc_saffire_radiation(g, o2, flow)
+        p_ratio = round(1.0 + (0.045 * (o2 / 21.0) * (float(area_m2) ** 0.5) * (1.0 / max(0.3, p))), 3)
+
+        ntrs_raw = str(exp.get("ntrs_document_id") or "").strip()
+        ntrs_link = str(exp.get("ntrs_link") or "").strip()
+        if not ntrs_link and ntrs_raw:
+            ntrs_num = ntrs_raw.replace("NASA-NTRS-", "").replace("NTRS-", "").strip()
+            ntrs_link = (
+                f"https://ntrs.nasa.gov/citations/{ntrs_num}"
+                if ntrs_num.isdigit()
+                else f"https://ntrs.nasa.gov/search?q={ntrs_raw}"
+            )
+
+        investigator = exp.get("investigator") or "NASA Glenn / Principal Investigator Team"
+        hardware_facility = exp.get("hardware_facility") or exp.get("platform") or "ISS / Cygnus Test Facility"
+        three_pillars = exp.get("three_pillars_focus") or "Prevention, Detection & Extinction"
+        detection_challenge = exp.get("detection_challenge") or prof["detection"]
+        extinction_mech = exp.get("extinction_mechanism") or prof["suppression"]
+        safety_insight = exp.get("spacecraft_safety_insight") or prof["prevention"]
+
+        hover_html = (
+            f"<b>{exp.get('mission', '')} | {hardware_facility}</b><br/>"
+            f"<b>PI:</b> {investigator}<br/>"
+            f"<b>Env:</b> {g:.2f}g | {o2:.1f}% O₂ | {p:.2f} atm | Burn: {burn_s:.1f}s<br/>"
+            f"<b>Pillar:</b> {three_pillars} | <b>Threat:</b> {matched['threat_score']}/100 ({matched['threat_tier']})"
+        )
+
+        cached[exp_id] = {
+            "id": exp_id,
+            "name": exp.get("name", ""),
+            "mission": exp.get("mission", ""),
+            "year": exp.get("year", ""),
+            "platform": exp.get("platform", ""),
+            "hardware_facility": hardware_facility,
+            "investigator": investigator,
+            "fuel_name": exp.get("fuel_name", ""),
+            "fuel_category": exp.get("fuel_category", ""),
+            "gravity_g": g,
+            "oxygen_pct": o2,
+            "pressure_atm": p,
+            "burn_duration_s": burn_s,
+            "safety_risk_level": exp.get("safety_risk_level", ""),
+            "cool_flame_observed": bool(exp.get("cool_flame_observed")),
+            "three_pillars_focus": three_pillars,
+            "key_phenomenon": exp.get("key_phenomenon", ""),
+            "detection_challenge": detection_challenge,
+            "extinction_mechanism": extinction_mech,
+            "spacecraft_safety_insight": safety_insight,
+            "ntrs_document_id": ntrs_raw,
+            "ntrs_link": ntrs_link,
+            "exp_key": exp_key,
+            "full_name": prof["title"],
+            "equation_name": matched["equation_name"],
+            "equation_latex": matched["equation_latex"],
+            "equation_desc": f"{prof['equation_name']} — calibrated against {prof['code']} flight envelope.",
+            "threat_score": matched["threat_score"],
+            "threat_tier": matched["threat_tier"],
+            "burn_rate_mm_s2": flex_m["Burning Constant K (mm²/s)"],
+            "spread_rate_mm_s": saf_m["Spread Rate V_f (mm/s)"],
+            "q_rad_kw_m2": saf_m["Radiative Loss q_rad (kW/m²)"],
+            "p_ratio": p_ratio,
+            "hover_summary_html": hover_html,
+        }
+    return cached

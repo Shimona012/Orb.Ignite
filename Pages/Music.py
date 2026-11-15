@@ -16,6 +16,17 @@ import random
 
 #Only available after login
 #To add if fails elevator royalty free music or lofi.
+#FALLBACKS:
+'''
+Music: 'Golden Age' by Walz on #Uppbeat https://uppbeat.io/c/walz
+License code: 3TI5DPK80SFLD86C (IN DATA/MUSIC)
+Music by Bensound.com/royalty-free-music (Moonlight drive)
+License code: RUOL1IOWB4D33SIE
+Artist: : Yunior Arronte (IN DATA/MUSIC
+Music track: Time by Avanti
+Source: https://freetouse.com/music
+Vlog Music for Video (Free Download) (IN MUSIC/DATA))
+'''
 TRACKS = [
     {
         "name": "Space Oddity - David Bowie",
@@ -121,7 +132,7 @@ def render_header_player():
 
         try {{
             const bg = window.parent.getComputedStyle(window.parent.document.body).backgroundColor;
-            const m = bg.match(/\d+/g);
+            const m = bg.match(/\\d+/g);
             if (m && (0.299 * m[0] + 0.587 * m[1] + 0.114 * m[2]) > 128) {{
                 btn.style.backgroundColor = "transparent";
             }} else {{
@@ -171,3 +182,22 @@ def render_header_player():
     </script>
     """
     components.html(html_code, height=130)
+
+    with st.expander("NASA Audio / Offline Fallback", expanded=False):
+        fallback_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Data", "MUSIC")
+        fallback_tracks = [
+            {"name": "Golden Age (Walz)", "file": "golden-age-walz-main-version-4077-03-22.mp3", "credit": "Uppbeat | License: 3TI5DPK80SFLD86C"},
+            {"name": "Moonlight Drive (Bensound)", "file": "bensound-moonlightdrive.mp3", "credit": "Bensound / Yunior Arronte | License: RUOL1IOWB4D33SIE"},
+            {"name": "Time (Avanti)", "file": "Avanti - Time (freetouse.com).mp3", "credit": "Avanti / freetouse.com (Free Download)"},
+        ]
+        sel_name = st.selectbox(
+            "Select Fallback Track",
+            [t["name"] for t in fallback_tracks],
+            key="header_fb_music_sel",
+            label_visibility="collapsed",
+        )
+        track_obj = next((t for t in fallback_tracks if t["name"] == sel_name), fallback_tracks[0])
+        local_path = os.path.join(fallback_dir, track_obj["file"])
+        if os.path.exists(local_path):
+            st.audio(local_path, format="audio/mp3")
+            st.caption(track_obj["credit"])

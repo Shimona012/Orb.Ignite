@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import streamlit as st
 from supabase import create_client
+#Using multiple google cloud api's:
 
 #need to add common login, and a basic admin login-logout system.
 def _get_supabase_client():
@@ -22,7 +23,10 @@ def _get_supabase_client():
     key = key or os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_ANON_KEY")
     if not url or not key:
         return None
-    return create_client(url, key)
+    try:
+        return create_client(url, key)
+    except Exception:
+        return None
 
 
 def _data_dir():
@@ -32,15 +36,82 @@ def _data_dir():
 def _load_experiments_file():
     path = os.path.join(_data_dir(), "experiments.json")
     if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
     return []
+
+
+def _load_ntrs_file():
+    path = os.path.join(_data_dir(), "ntrs_links.json")
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+
+def _save_ntrs_file(ntrs_items):
+    path = os.path.join(_data_dir(), "ntrs_links.json")
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(ntrs_items, f, indent=2)
+    except Exception:
+        pass
+
+
+def _sync_ntrs_registry(records):
+    existing = _load_ntrs_file()
+    existing_by_doc = {str(item.get("ntrs_id", "")).strip(): item for item in existing if item.get("ntrs_id")}
+    existing_by_id = {str(item.get("id", "")).strip(): item for item in existing if item.get("id")}
+
+    updated = list(existing)
+    for r in records:
+        raw_ntrs = str(r.get("ntrs_document_id") or "").strip()
+        custom_link = str(r.get("ntrs_link") or "").strip()
+        if not raw_ntrs and not custom_link:
+            continue
+        clean_num = raw_ntrs.replace("NASA-NTRS-", "").replace("NTRS-", "").strip()
+        key_id = f"NTRS-{clean_num}" if clean_num else f"NTRS-{r.get('id', 'DOC')}"
+        link_url = custom_link or (f"https://ntrs.nasa.gov/citations/{clean_num}" if clean_num.isdigit() else f"https://ntrs.nasa.gov/search?q={raw_ntrs}")
+
+        raw_rtype = str(r.get("resource_type") or "").strip()
+        mapped_rtype = (
+            "External Research Paper" if raw_rtype == "Paper"
+            else ("NASA Experiment / Guide" if raw_rtype in ("Experiment", "NASA Experiment / Guide")
+                  else ("Other" if raw_rtype == "Other" else "NTRS Technical Report"))
+        )
+
+        if key_id not in existing_by_id and (not clean_num or clean_num not in existing_by_doc):
+            new_item = {
+                "id": key_id,
+                "ntrs_id": clean_num if clean_num.isdigit() else "",
+                "resource_type": mapped_rtype if not clean_num.isdigit() else "NTRS Technical Report",
+                "title": f"{r.get('name', 'Technical Report')} ({r.get('mission', 'NASA')})",
+                "citation_url": link_url,
+                "mission": r.get("mission", ""),
+                "fuel": r.get("fuel_name", ""),
+                "year": int(r.get("year", 2024)),
+                "pdf_file": "",
+                "summary": r.get("key_phenomenon", ""),
+            }
+            updated.append(new_item)
+            existing_by_id[key_id] = new_item
+            if clean_num:
+                existing_by_doc[clean_num] = new_item
+
+    _save_ntrs_file(updated)
 
 
 def _save_experiments_file(records, client=None):
     path = os.path.join(_data_dir(), "experiments.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(records, f, indent=2)
+    _sync_ntrs_registry(records)
     if client is not None and records:
         try:
             client.table("experiments").upsert(records).execute()
@@ -49,41 +120,158 @@ def _save_experiments_file(records, client=None):
     st.cache_data.clear()
 
 
+def _verify_admin_credentials(email, password, client=None):
+    if client is not None and email:
+        try:
+            res = client.auth.sign_in_with_password({"email": email.strip(), "password": password})
+            if res.user:
+                return True, res.user.email
+        except Exception:
+            pass
+
+    admin_pw = None
+    try:
+        admin_pw = st.secrets.get("ADMIN_PASSWORD") or st.secrets.get("admin_password")
+    except Exception:
+        pass
+    admin_pw = admin_pw or os.getenv("ADMIN_PASSWORD", "orb-admin")
+
+    admin_email = None
+    try:
+        admin_email = st.secrets.get("ADMIN_EMAIL") or st.secrets.get("admin_email")
+    except Exception:
+        pass
+    admin_email = admin_email or os.getenv("ADMIN_EMAIL", "admin@orbignite.org")
+
+    if password == admin_pw and (not email or email.strip().lower() == admin_email.strip().lower() or email.strip().lower() == "admin"):
+        return True, admin_email
+    return False, None
+
+
+def render_sidebar_auth():
+    client = _get_supabase_client()
+    user = st.session_state.get("auth_user")
+    is_admin = st.session_state.get("is_admin", False)
+
+    st.markdown("#### User Authentication")
+
+    if user:
+        role_badge = "Administrator" if is_admin else "Researcher"
+        st.markdown(f"**Status:** `{role_badge}`")
+        st.caption(f"Signed in as `{user}`")
+        if st.button("Sign Out", key="auth_btn_signout", use_container_width=True):
+            if client is not None and not is_admin:
+                try:
+                    client.auth.sign_out()
+                except Exception:
+                    pass
+            st.session_state.pop("auth_user", None)
+            st.session_state.pop("admin_user", None)
+            st.session_state["is_admin"] = False
+            st.session_state["show_admin_portal"] = False
+            st.rerun()
+    else:
+        st.caption("Access experimental controls or admin records.")
+        with st.expander("Sign In / Sign Up", expanded=False):
+            auth_tab1, auth_tab2, auth_tab3 = st.tabs(["Sign In", "Sign Up", "Admin"])
+
+            with auth_tab1:
+                with st.form("sidebar_signin_form"):
+                    u_email = st.text_input("Email", key="u_sign_in_email")
+                    u_pw = st.text_input("Password", type="password", key="u_sign_in_pw")
+                    u_submit = st.form_submit_button("Sign In as Researcher", use_container_width=True)
+                    if u_submit:
+                        if not u_email or not u_pw:
+                            st.error("Please enter email and password.")
+                        elif client is not None:
+                            try:
+                                res = client.auth.sign_in_with_password({"email": u_email.strip(), "password": u_pw})
+                                if res.user:
+                                    st.session_state["auth_user"] = res.user.email
+                                    st.session_state["is_admin"] = False
+                                    st.success(f"Welcome, {res.user.email}!")
+                                    st.rerun()
+                            except Exception as exc:
+                                st.error(f"Sign in failed: {exc}")
+                        else:
+                            st.session_state["auth_user"] = u_email.strip()
+                            st.session_state["is_admin"] = False
+                            st.success("Signed in (Local Session).")
+                            st.rerun()
+
+            with auth_tab2:
+                with st.form("sidebar_signup_form"):
+                    su_email = st.text_input("Email", key="u_sign_up_email")
+                    su_pw = st.text_input("Password (min 6 chars)", type="password", key="u_sign_up_pw")
+                    su_submit = st.form_submit_button("Register Account", use_container_width=True)
+                    if su_submit:
+                        if not su_email or len(su_pw) < 6:
+                            st.error("Please enter a valid email and minimum 6-character password.")
+                        elif client is not None:
+                            try:
+                                res = client.auth.sign_up({"email": su_email.strip(), "password": su_pw})
+                                if res.user:
+                                    st.session_state["auth_user"] = res.user.email
+                                    st.session_state["is_admin"] = False
+                                    st.success("Account created! Check email if verification is required.")
+                                    st.rerun()
+                            except Exception as exc:
+                                st.error(f"Registration failed: {exc}")
+                        else:
+                            st.session_state["auth_user"] = su_email.strip()
+                            st.session_state["is_admin"] = False
+                            st.success("Account registered locally.")
+                            st.rerun()
+
+            with auth_tab3:
+                with st.form("sidebar_admin_login_form"):
+                    adm_email = st.text_input("Admin Email (or 'admin')", value="admin@orbignite.org", key="u_adm_email")
+                    adm_pw = st.text_input("Admin Password", type="password", key="u_adm_pw")
+                    adm_submit = st.form_submit_button("Unlock Admin Portal", use_container_width=True)
+                    if adm_submit:
+                        ok, adm_id = _verify_admin_credentials(adm_email, adm_pw, client)
+                        if ok:
+                            st.session_state["auth_user"] = adm_id
+                            st.session_state["admin_user"] = adm_id
+                            st.session_state["is_admin"] = True
+                            st.session_state["show_admin_portal"] = True
+                            st.success("Admin unlocked.")
+                            st.rerun()
+                        else:
+                            st.error("Invalid admin credentials.")
+
+
 def render_admin_portal():
     st.header("Admin Portal")
     client = _get_supabase_client()
+    is_admin = st.session_state.get("is_admin", False)
+    user = st.session_state.get("admin_user") or st.session_state.get("auth_user")
 
-    if client is None:
-        st.warning("Configure SUPABASE_URL and SUPABASE_KEY in .streamlit/secrets.toml to enable Supabase authentication.")
-        return
-
-    user = st.session_state.get("admin_user")
-
-    if not user:
-        with st.form("supabase_login_form"):
-            email = st.text_input("Admin Email")
-            password = st.text_input("Password", type="password")
-            submitted = st.form_submit_button("Sign In")
+    if not is_admin:
+        st.info("Administrator credentials required to modify flight records and document links.")
+        with st.form("admin_login_direct_form"):
+            email = st.text_input("Admin Email", value="admin@orbignite.org")
+            password = st.text_input("Admin Password", type="password")
+            submitted = st.form_submit_button("Sign In as Admin")
             if submitted:
-                try:
-                    res = client.auth.sign_in_with_password({"email": email, "password": password})
-                    if res.user:
-                        st.session_state["admin_user"] = res.user.email
-                        st.rerun()
-                except Exception as exc:
-                    st.error(f"Authentication failed: {exc}")
+                ok, adm_id = _verify_admin_credentials(email, password, client)
+                if ok:
+                    st.session_state["auth_user"] = adm_id
+                    st.session_state["admin_user"] = adm_id
+                    st.session_state["is_admin"] = True
+                    st.success("Admin authorized.")
+                    st.rerun()
+                else:
+                    st.error("Authentication failed. Check your admin password or Supabase credentials.")
         return
 
     col_u1, col_u2 = st.columns([4, 1])
     with col_u1:
-        st.caption(f"Signed in as {user}")
+        storage_mode = "Supabase Cloud" if client is not None else "Local Storage"
+        st.caption(f"Signed in as `{user}` (Administrator) | Backend: **{storage_mode}**")
     with col_u2:
-        if st.button("Sign Out"):
-            try:
-                client.auth.sign_out()
-            except Exception:
-                pass
-            st.session_state.pop("admin_user", None)
+        if st.button("Exit Admin"):
+            st.session_state["show_admin_portal"] = False
             st.rerun()
 
     records = _load_experiments_file()
@@ -91,19 +279,24 @@ def render_admin_portal():
     st.subheader("Edit or Delete Experiment Records")
     df = pd.DataFrame(records)
     edited_df = st.data_editor(df, num_rows="dynamic", use_container_width=True, key="admin_editor")
-    if st.button("Save Changes"):
+    if st.button("Save Changes to Experiments"):
         updated = edited_df.dropna(how="all").to_dict(orient="records")
         _save_experiments_file(updated, client)
-        st.success("Dataset updated.")
+        st.success("Dataset and NTRS registry updated.")
         st.rerun()
 
-    with st.expander("Add Experiment"):
+    with st.expander("Add Experiment / Resource"):
         with st.form("add_exp_form"):
+            record_category = st.selectbox(
+                "Resource / Addition Type",
+                ["Experiment", "Paper", "NTRS Report", "Other"],
+                key="admin_add_record_type",
+            )
             c1, c2 = st.columns(2)
             with c1:
                 exp_id = st.text_input("ID")
                 mission = st.text_input("Mission")
-                name = st.text_input("Name")
+                name = st.text_input("Name / Title")
                 year = st.number_input("Year", min_value=1960, max_value=2035, value=2024, step=1)
                 platform = st.text_input("Platform")
                 fuel_name = st.text_input("Fuel Name")
@@ -115,16 +308,17 @@ def render_admin_portal():
                 burn_duration_s = st.number_input("Burn Duration (s)", min_value=0.0, value=0.0, step=1.0)
                 safety_risk_level = st.selectbox("Safety Risk Level", ["LOW", "MODERATE", "CRITICAL"])
                 cool_flame = st.checkbox("Cool Flame Observed")
-                ntrs_id = st.text_input("NTRS Document ID")
-                ntrs_link = st.text_input("NTRS Link (optional)")
-            key_phenomenon = st.text_area("Key Phenomenon")
+                ntrs_id = st.text_input("NTRS Document ID (for numbered NTRS reports)")
+                ntrs_link = st.text_input("Reference / Citation Link (optional)")
+            key_phenomenon = st.text_area("Key Phenomenon / Summary")
 
             if st.form_submit_button("Add Record"):
                 if not exp_id or not name:
-                    st.error("ID and Name are required.")
-                else:
+                    st.error("ID and Name / Title are required.")
+                elif record_category == "Experiment":
                     records.append({
                         "id": exp_id,
+                        "resource_type": "Experiment",
                         "mission": mission,
                         "name": name,
                         "year": int(year),
@@ -142,7 +336,31 @@ def render_admin_portal():
                         "ntrs_link": ntrs_link,
                     })
                     _save_experiments_file(records, client)
-                    st.success(f"Added {exp_id}.")
+                    st.success(f"Added Experiment {exp_id}.")
+                    st.rerun()
+                else:
+                    rtype_map = {
+                        "Paper": "External Research Paper",
+                        "NTRS Report": "NTRS Technical Report",
+                        "Other": "NASA Experiment / Guide",
+                    }
+                    clean_num = ntrs_id.replace("NASA-NTRS-", "").replace("NTRS-", "").strip()
+                    ntrs_items = _load_ntrs_file()
+                    ntrs_items.append({
+                        "id": exp_id,
+                        "ntrs_id": clean_num if record_category == "NTRS Report" else "",
+                        "resource_type": rtype_map.get(record_category, "Other"),
+                        "title": name,
+                        "citation_url": ntrs_link or (f"https://ntrs.nasa.gov/citations/{clean_num}" if clean_num.isdigit() else ""),
+                        "mission": mission or record_category,
+                        "fuel": fuel_name or fuel_category,
+                        "year": int(year),
+                        "pdf_file": "",
+                        "summary": key_phenomenon,
+                    })
+                    _save_ntrs_file(ntrs_items)
+                    st.cache_data.clear()
+                    st.success(f"Added {record_category} record '{exp_id}' to Resource Registry.")
                     st.rerun()
 
     st.subheader("Delete Record or Manage Data Files")
@@ -162,12 +380,42 @@ def render_admin_portal():
                 st.rerun()
 
     with c_del2:
-        uploaded = st.file_uploader("Upload Dataset File", type=["json", "csv", "pdf"])
+        upload_type = st.selectbox(
+            "Uploaded Resource Category",
+            ["Experiment", "Paper", "NTRS Report", "Other"],
+            key="admin_upload_file_type",
+        )
+        uploaded = st.file_uploader("Upload Dataset / Resource File", type=["json", "csv", "pdf"])
         if uploaded is not None and st.button("Save Uploaded File"):
             target = os.path.join(_data_dir(), uploaded.name)
             with open(target, "wb") as out:
                 out.write(uploaded.getbuffer())
-            st.success(f"Saved {uploaded.name}.")
+            if uploaded.name.lower().endswith(".pdf"):
+                rtype_map = {
+                    "Experiment": "NASA Experiment / Guide",
+                    "Paper": "External Research Paper",
+                    "NTRS Report": "NTRS Technical Report",
+                    "Other": "Other",
+                }
+                stem = os.path.splitext(uploaded.name)[0]
+                is_ntrs_num = stem.isdigit() and upload_type == "NTRS Report"
+                ntrs_items = _load_ntrs_file()
+                if not any(item.get("pdf_file") == uploaded.name for item in ntrs_items):
+                    ntrs_items.append({
+                        "id": f"NTRS-{stem}" if is_ntrs_num else f"RES-{stem[:18].upper()}",
+                        "ntrs_id": stem if is_ntrs_num else "",
+                        "resource_type": rtype_map.get(upload_type, "Other"),
+                        "title": stem.replace("_", " ").replace("-", " "),
+                        "citation_url": f"https://ntrs.nasa.gov/citations/{stem}" if is_ntrs_num else "",
+                        "mission": upload_type,
+                        "fuel": "Uploaded Document",
+                        "year": 2025,
+                        "pdf_file": uploaded.name,
+                        "summary": f"Admin-uploaded {upload_type} document ({uploaded.name}).",
+                    })
+                    _save_ntrs_file(ntrs_items)
+            st.cache_data.clear()
+            st.success(f"Saved {uploaded.name} as '{upload_type}'.")
 
         data_files = sorted(os.listdir(_data_dir()))
         if data_files:
@@ -178,6 +426,19 @@ def render_admin_portal():
                     os.remove(target)
                     st.success(f"Removed {del_file}.")
                     st.rerun()
+
+    st.subheader("NTRS Document Registry Links")
+    ntrs_items = _load_ntrs_file()
+    if ntrs_items:
+        df_ntrs = pd.DataFrame(ntrs_items)
+        edited_ntrs = st.data_editor(df_ntrs, num_rows="dynamic", use_container_width=True, key="admin_ntrs_editor")
+        if st.button("Save NTRS Registry Changes"):
+            updated_ntrs = edited_ntrs.dropna(how="all").to_dict(orient="records")
+            _save_ntrs_file(updated_ntrs)
+            st.success("NTRS registry updated successfully.")
+            st.rerun()
+    else:
+        st.caption("No NTRS links indexed yet.")
 
     st.subheader("Contact Messages")
     messages = []

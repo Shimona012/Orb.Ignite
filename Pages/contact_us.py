@@ -7,7 +7,7 @@ import smtplib
 import streamlit as st
 import Authentication
 
-
+#To be tried after the whole mock is done
 def _save_contact_message(payload):
     client = Authentication._get_supabase_client()
     if client is not None:
@@ -30,14 +30,14 @@ def _save_contact_message(payload):
         json.dump(existing, f, indent=2)
 
 
-def _send_email_if_configured(name, email, message):
+def _send_email_if_configured(name, email, message, receiver_email=None):
     smtp_email = None
     smtp_password = None
-    receiver_email = None
     try:
         smtp_email = st.secrets.get("SMTP_EMAIL")
         smtp_password = st.secrets.get("SMTP_PASSWORD")
-        receiver_email = st.secrets.get("CONTACT_RECEIVER_EMAIL")
+        if not receiver_email:
+            receiver_email = st.secrets.get("CONTACT_RECEIVER_EMAIL")
     except Exception:
         pass
     smtp_email = smtp_email or os.getenv("SMTP_EMAIL")
@@ -50,31 +50,41 @@ def _send_email_if_configured(name, email, message):
     msg["From"] = smtp_email
     msg["To"] = receiver_email
     msg["Reply-To"] = email
-    msg.set_content(f"From: {name} <{email}>\n\n{message}")
+    msg.set_content(f"From: {name} <{email}>\nTo: {receiver_email}\n\n{message}")
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
         server.login(smtp_email, smtp_password)
         server.send_message(msg)
 
 
 def render():
+    default_rcv = ""
+    try:
+        default_rcv = st.secrets.get("CONTACT_RECEIVER_EMAIL", "")
+    except Exception:
+        pass
+    default_rcv = default_rcv or os.getenv("CONTACT_RECEIVER_EMAIL", "")
+
     with st.form("contact_us_form", clear_on_submit=True):
         name = st.text_input("Name")
-        email = st.text_input("Email")
+        email = st.text_input("Your Email (Reply-To)")
+        receiver = st.text_input("Receiver Email (Send To)", value=default_rcv, placeholder="e.g. investigator@nasa.gov or your recipient")
         message = st.text_area("Message")
-        submitted = st.form_submit_button("Send")
+        submitted = st.form_submit_button("Send Message")
         if submitted:
             if not name.strip() or not email.strip() or not message.strip():
                 st.error("Please fill in your name, email, and message.")
             else:
+                target_receiver = receiver.strip() or default_rcv
                 payload = {
                     "name": name.strip(),
                     "email": email.strip(),
+                    "receiver": target_receiver,
                     "message": message.strip(),
                     "created_at": datetime.now(timezone.utc).isoformat(),
                 }
                 _save_contact_message(payload)
                 try:
-                    _send_email_if_configured(name.strip(), email.strip(), message.strip())
+                    _send_email_if_configured(name.strip(), email.strip(), message.strip(), receiver_email=target_receiver)
                 except Exception:
                     pass
-                st.success("Message sent.")
+                st.success(f"Message sent successfully to {target_receiver or 'configured receiver'}.")

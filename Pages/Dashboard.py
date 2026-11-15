@@ -12,7 +12,8 @@ import Authentication
 import About
 import KnowledgeBase
 import contact_us
-#Will import other modules as they are developed.
+import combustion_physics
+
 
 #need to make hoverable carts for the bottom 3 buttons
 @st.dialog("Help / Metric Guide", width="large")
@@ -207,6 +208,7 @@ def load_experiments():
     return []
 
 experiments_data = load_experiments()
+combustion_physics.ensure_preset_state()
 
 
 with st.sidebar:
@@ -214,15 +216,15 @@ with st.sidebar:
     st.divider()
     scenario_preset = st.selectbox(
         "Environment Preset",
-        ["ISS Microgravity (0g)", "Lunar Gateway (0.16g)", "Mars Habitat (0.38g)", "Earth Lab (1.0g)", "Custom"],
-        index=0
+        combustion_physics.PRESET_OPTIONS,
+        key="sidebar_env_preset",
+        on_change=combustion_physics.on_preset_change,
+        args=("sidebar_env_preset",),
     )
     st.divider()
-    admin_portal_open = False
-    try:
-        st.page_link("Pages/Authentication.py", label="Admin Portal")
-    except Exception:
-        admin_portal_open = st.toggle("Admin Portal", key="show_admin_portal")
+    Authentication.render_sidebar_auth()
+
+admin_portal_open = st.session_state.get("show_admin_portal", False)
 
 
 col_hdr, col_music = st.columns([8, 2])
@@ -275,34 +277,28 @@ else:
     if "active_footer_view" not in st.session_state:
         st.session_state["active_footer_view"] = None
 
-    f_col1, f_col2, f_col3, f_col4 = st.columns([1.2, 1.2, 1.2, 2.4])
+    f_col1, f_col2, f_col3 = st.columns([1.5, 1.5, 3.0])
     with f_col1:
-        if st.button("Help / Guide", key="btn_footer_help", use_container_width=True):
-            st.session_state["active_footer_view"] = "help" if st.session_state.get("active_footer_view") != "help" else None
-            st.rerun()
-    with f_col2:
         if st.button("About Us", key="btn_footer_about", use_container_width=True):
             st.session_state["active_footer_view"] = "about" if st.session_state.get("active_footer_view") != "about" else None
             st.rerun()
-    with f_col3:
+    with f_col2:
         if st.button("Contact Us", key="btn_footer_contact", use_container_width=True):
             st.session_state["active_footer_view"] = "contact" if st.session_state.get("active_footer_view") != "contact" else None
             st.rerun()
-    with f_col4:
-        st.caption("Click any button above to view guides, platform mission, or get in touch.")
+    with f_col3:
+        st.caption("Click any button above to view platform mission or get in touch.")
 
     active_view = st.session_state.get("active_footer_view")
     if active_view:
         with st.container(border=True):
             c_head, c_close = st.columns([10, 2])
             with c_close:
-                if st.button("✖ Close Panel", key="btn_close_footer_view", use_container_width=True):
+                if st.button("Close Panel", key="btn_close_footer_view", use_container_width=True):
                     st.session_state["active_footer_view"] = None
                     st.rerun()
             with c_head:
-                if active_view == "help":
-                    KnowledgeBase.render()
-                elif active_view == "about":
+                if active_view == "about":
                     About.render()
                 elif active_view == "contact":
                     contact_us.render()

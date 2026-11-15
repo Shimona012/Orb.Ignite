@@ -15,7 +15,7 @@ def compute_field(g, o2_pct, flow, morph=None):
     #To be optimized into detecting different experimental categories before predicting and changing colours based on that
     n_points = 32
     xy_axis = np.linspace(-2.2, 2.2, n_points)
-    z_axis = np.linspace(-1.5, 4.0, n_points)
+    z_axis = np.linspace(-1.5, 4.2, n_points)
     X, Y, Z = np.meshgrid(xy_axis, xy_axis, z_axis)
     buoyancy_stretch = morph["buoyancy_stretch"] if morph else (1.0 + (1.8 * g))
     #hotness of flamer proportional to oxygen 
@@ -26,7 +26,8 @@ def compute_field(g, o2_pct, flow, morph=None):
     X_shifted = X - x_drift
     # Points above the center (Z > 0) stretch upward more than points below (Z < 0)
     Z_modified = np.where(Z > 0, Z / buoyancy_stretch, Z * 1.2)
-    Radius = (X_shifted**2) + (Y**2) + (Z_modified**2)
+    radial_pinch = 1.0 + 0.28 * g * np.clip(Z / max(1.0, buoyancy_stretch), 0.0, 1.5)
+    Radius = ((X_shifted * radial_pinch)**2) + ((Y * radial_pinch)**2) + (Z_modified**2)
     #Thermal Gradient using Gaussian decay (Asymptotic tail : value decreases as we move towards 0;  Unlike sharp or linear cutoffs, the drop-off starts slow near the peak, accelerates in the middle, and then flattens out smoothly at greater distances)
     temp_scale = morph["temp_scale"] if morph else (0.4 + 0.6 * ((o2_pct - 15.0) / 20.0))
     intensity = 1000.0 * temp_scale * np.exp(-Radius / (size_factor ** 2))
@@ -43,6 +44,7 @@ DYNAMIC_FLAME_SCALE = [
 
 
 def render():
+    combustion_physics.ensure_preset_state()
     st.subheader("3D Flame Morphing Lab")
 
     col1, col2 = st.columns([1, 2.5])
@@ -55,26 +57,49 @@ def render():
         )
         scenario_preset = st.selectbox(
             "Environment Preset",
-            ["ISS Microgravity (0g)", "Lunar Gateway (0.16g)", "Mars Habitat (0.38g)", "Earth Lab (1.0g)", "Custom"],
-            index=0,
-            key="fl_preset"
+            combustion_physics.PRESET_OPTIONS,
+            key="fl_env_preset",
+            on_change=combustion_physics.on_preset_change,
+            args=("fl_env_preset",),
         )
-        if scenario_preset == "ISS Microgravity (0g)":
-            default_g, default_o2, default_flow = 0.00, 21.0, 0.0
-        elif scenario_preset == "Lunar Gateway (0.16g)":
-            default_g, default_o2, default_flow = 0.16, 23.0, 2.0
-        elif scenario_preset == "Mars Habitat (0.38g)":
-            default_g, default_o2, default_flow = 0.38, 25.0, 5.0
-        elif scenario_preset == "Earth Lab (1.0g)":
-            default_g, default_o2, default_flow = 1.00, 20.9, 0.0
-        else:
-            default_g, default_o2, default_flow = 0.00, 21.0, 0.0
 
-        gravity = st.slider("Gravity Level (g)", 0.0, 1.0, default_g, 0.02)
-        oxygen = st.slider("Oxygen Concentration (% O₂)", 15.0, 35.0, default_o2, 0.5)
-        ventilation = st.slider("Cabin Airflow / Ventilation (cm/s)", 0.0, 20.0, default_flow, 1.0)
-        area_m2 = st.slider("Enclosure / Sample Area (m²)", 0.1, 10.0, 1.0, 0.1)
-        colorscheme = st.selectbox("Color Palette", ["Dynamic (Experiment Optical)", "Dynamic (Temp)", "Hot", "Inferno", "Turbo", "Plasma"])
+        gravity = st.slider(
+            "Gravity Level (g)",
+            0.0,
+            1.0,
+            step=0.01,
+            key="fl_g",
+            on_change=combustion_physics.on_slider_change_to_custom,
+            args=("fl",),
+        )
+        oxygen = st.slider(
+            "Oxygen Concentration (% O₂)",
+            15.0,
+            35.0,
+            step=0.1,
+            key="fl_o2",
+            on_change=combustion_physics.on_slider_change_to_custom,
+            args=("fl",),
+        )
+        ventilation = st.slider(
+            "Cabin Airflow / Ventilation (cm/s)",
+            0.0,
+            20.0,
+            step=0.5,
+            key="fl_flow",
+            on_change=combustion_physics.on_slider_change_to_custom,
+            args=("fl",),
+        )
+        area_m2 = st.slider(
+            "Enclosure / Sample Area (m²)",
+            0.1,
+            10.0,
+            step=0.1,
+            key="fl_area",
+            on_change=combustion_physics.on_slider_change_to_custom,
+            args=("fl",),
+        )
+        colorscheme = st.selectbox("Color Palette", ["Dynamic (Experiment Optical)", "Dynamic (Temp)", "Hot", "Inferno", "Turbo", "Plasma"], key="fl_colorscheme")
 
         state = combustion_physics.evaluate_combustion_state(fuel_type, gravity, oxygen, ventilation, area_m2=area_m2)
         st.markdown(
@@ -84,13 +109,14 @@ def render():
             f"**Area Regime:** {state['area_scaling']['area_regime']}  \n"
             f"**Regime:** {state['regime_label']}"
         )
+        st.caption(state["optical_regime_desc"])
 
     with col2:
         X, Y, Z, intensity = compute_field(gravity, oxygen, ventilation, state["morphology_params"])
         if colorscheme == "Dynamic (Experiment Optical)":
             active_scale = state["colorscale"]
         elif colorscheme == "Dynamic (Temp)":
-            active_scale = DYNAMIC_FLAME_SCALE
+            active_scale = state["temp_colorscale"]
         else:
             active_scale = colorscheme
         fig = go.Figure(data=go.Isosurface(
