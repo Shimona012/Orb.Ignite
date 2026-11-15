@@ -1,4 +1,5 @@
 #Dashboard page, SI for markdown styling and data-ingestion. 
+#Used SI for optimization in all OS,screens and browsers
 import streamlit as st
 import streamlit.components.v1 as components
 import os
@@ -103,10 +104,14 @@ st.markdown(
     html {{
         scroll-behavior: smooth;
         -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
     }}
 
     html, body, [class*="css"], .stApp {{
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
     }}
 
     [data-testid="stSidebar"],
@@ -130,10 +135,11 @@ st.markdown(
         padding-bottom: 4rem !important;
     }}
 
-
     .block-container {{
-        padding-top: 4rem !important;
-        padding-bottom: 1.5rem !important;
+        padding-top: calc(4.25rem + env(safe-area-inset-top, 0px)) !important;
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px)) !important;
+        padding-left: max(1rem, env(safe-area-inset-left, 0px)) !important;
+        padding-right: max(1rem, env(safe-area-inset-right, 0px)) !important;
     }}
 
     h1, h2, h3, h4, h5, h6 {{
@@ -149,8 +155,9 @@ st.markdown(
     .stAppHeader,
     header[data-testid="stHeader"] {{
         background-color: #05070B !important;
-        height: 3.25rem !important;
-        min-height: 3.25rem !important;
+        height: calc(3.25rem + env(safe-area-inset-top, 0px)) !important;
+        min-height: calc(3.25rem + env(safe-area-inset-top, 0px)) !important;
+        padding-top: env(safe-area-inset-top, 0px) !important;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
         z-index: 99990 !important;
     }}
@@ -310,7 +317,7 @@ st.markdown(
     .orb-section-nav {{
         position: -webkit-sticky;
         position: sticky;
-        top: 0;
+        top: calc(3.25rem + env(safe-area-inset-top, 0px));
         z-index: 99;
         display: flex;
         gap: 4px;
@@ -342,7 +349,7 @@ st.markdown(
         border-bottom: 2px solid #FC3D21;
     }}
     .orb-section-anchor {{
-        scroll-margin-top: 3.5rem;
+        scroll-margin-top: calc(3.8rem + env(safe-area-inset-top, 0px));
     }}
     button[kind="tertiary"][key*="btn_footer_"] p,
     button[data-testid="baseButton-tertiary"] p {{
@@ -356,19 +363,59 @@ st.markdown(
         color: #FC3D21 !important;
     }}
 
+    img, svg, canvas, .js-plotly-plot, .plot-container {{
+        max-width: 100% !important;
+    }}
+
+    [data-testid="stDataFrame"], [data-testid="stTable"] {{
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }}
+
     @media (max-width: 768px) {{
         .block-container {{
-            padding-top: 1rem !important;
-            padding-left: 0.75rem !important;
-            padding-right: 0.75rem !important;
+            padding-top: calc(4rem + env(safe-area-inset-top, 0px)) !important;
+            padding-left: max(0.75rem, env(safe-area-inset-left, 0px)) !important;
+            padding-right: max(0.75rem, env(safe-area-inset-right, 0px)) !important;
         }}
         .orb-topbar {{
             flex-wrap: wrap;
             gap: 0.25rem;
         }}
+        .orb-brand-title {{
+            font-size: clamp(2.4rem, 8vw, 4.2rem) !important;
+        }}
         [data-testid="stHorizontalBlock"] {{
-            flex-direction: column;
-            gap: 0.5rem;
+            flex-wrap: wrap !important;
+            gap: 0.6rem !important;
+        }}
+        [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
+            min-width: calc(50% - 0.4rem) !important;
+            flex: 1 1 calc(50% - 0.4rem) !important;
+        }}
+    }}
+
+    @media (max-width: 480px) {{
+        .block-container {{
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }}
+        .orb-brand-title {{
+            font-size: clamp(1.9rem, 8vw, 3rem) !important;
+        }}
+        [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+        }}
+    }}
+
+    @media (pointer: coarse) {{
+        button, [role="button"] {{
+            min-height: 40px;
+        }}
+        .orb-section-nav a {{
+            padding: 10px 16px !important;
         }}
     }}
     </style>
@@ -421,13 +468,14 @@ components.html(
             const st = doc.createElement('style');
             st.id = 'orb-pull-style';
             st.textContent =
-                '#orb-pull{position:fixed;top:0;right:clamp(1rem,3vw,2.5rem);z-index:999999;width:32px;pointer-events:none;display:flex;flex-direction:column;align-items:center;}' +
+                '#orb-pull{position:fixed;top:env(safe-area-inset-top,0px);right:clamp(1rem,3vw,2.5rem);z-index:999999;width:32px;pointer-events:none;display:flex;flex-direction:column;align-items:center;}' +
                 '#orb-pull .orb-chain{width:0;border-left:2px dotted #64748B;height:calc(110px + var(--pull,0px));transition:height 0.35s cubic-bezier(0.3,1.6,0.5,1);}' +
                 '[data-theme="dark"] #orb-pull .orb-chain{border-left-color:#94A3B8;}' +
                 '[data-theme="light"] #orb-pull .orb-chain{border-left-color:#475569;}' +
-                '#orb-pc{pointer-events:auto;width:32px;height:32px;margin-top:-2px;padding:0;border:0;background:transparent;cursor:grab;touch-action:none;display:grid;place-items:center;transition:transform 0.2s ease;}' +
+                '#orb-pc{pointer-events:auto;width:32px;height:32px;margin-top:-2px;padding:0;border:0;background:transparent;cursor:grab;touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;display:grid;place-items:center;transition:transform 0.2s ease;}' +
                 '#orb-pc:active{cursor:grabbing;}' +
                 '#orb-pc:hover{transform:scale(1.14);}' +
+                '@media(max-width:640px){#orb-pull{right:0.75rem!important;}[data-testid="stToolbar"]{padding-right:3.25rem!important;}}' +
                 '@media print{#orb-pull{display:none!important;}}';
             doc.head.appendChild(st);
         }

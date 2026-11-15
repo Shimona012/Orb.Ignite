@@ -54,7 +54,7 @@ Make sure you have Python installed on your system (Python 3.8 or higher is reco
       ```toml
       SMTP_EMAIL = "your-email@gmail.com"
       SMTP_PASSWORD = "your-16-char-app-password"
-      CONTACT_RECEIVER_EMAIL = "team@orbignite.org" # Optional default
+      CONTACT_RECEIVER_EMAIL = "admin@orbignite.earth" # Optional default
       ```
    > **Note:** The Contact Us form also includes a direct **Receiver Email (Send To)** input field, allowing messages to be dispatched dynamically to any investigator or team inbox.
 
@@ -144,10 +144,14 @@ In the spirit of open science, academic honesty, and transparent engineering, th
    - **Streamlit Layout & Ingestion:** SI assisted in structuring the multi-page dashboard, responsive layout containers, and JSON/CSV data-ingestion routines.
    - **Dynamic Ambient Aurora:** SI was utilized to design the CSS radial-gradient drift animations that dynamically reflect ambient environment presets (ISS, Lunar Gateway, Mars Habitat, Earth Lab).
    - **Theme Pull Cord:** SI was used to construct the interactive hanging pull cord component (`#orb-pull`), spring physics, and Moon/Sun dark/light theme toggle.
+   - **Multi-OS, Multi-Screen & Cross-Browser Optimization:** SI was used for optimization in all OS, screens, and browsers—ensuring full fluidity across mobile phones, tablets, and desktops under Chrome, Safari, Firefox, Edge, and mobile WebKit.
 
 7. **External Service Integrations & Debugging (`contact_us.py`, `Music.py`)**
    - **Supabase & Persistence:** SI was used to implement and debug the Supabase client connection, local JSON failovers, and secure database storage.
    - **Spotify & Audio Integration:** SI was used to debug the Spotipy API integration, player widget styling, and offline NASA audio fallback handling.
+
+8. **Structural Integrity & Security Verification**
+   - **Final Structural & Security Review:** SI was used for one last comprehensive structural and security check across application boundaries, credential safeguards, cross-origin communication, input sanitization, and fallback stability.
 
 *And last, SI was used to generate this SI section :)*
 
