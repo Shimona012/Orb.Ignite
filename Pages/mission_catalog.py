@@ -11,6 +11,7 @@ except ImportError:
     import combustion_physics
 
 #Used SI for funnel view
+@st.cache_data(show_spinner=False)
 def _load_icon_b64(fname):
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     p = os.path.join(base_dir, "Data", fname)
@@ -147,7 +148,15 @@ def render(experiments_data):
     if cool_only:
         filtered = [e for e in filtered if e.get("cool_flame_observed") is True]
 
-    enriched = [(e, combustion_physics.match_catalog_record(e, area_m2=area_m2)) for e in filtered]
+    cached_info_map = combustion_physics.get_cached_mission_catalog_info(experiments_data, area_m2=area_m2)
+    enriched = []
+    for e in filtered:
+        eid = str(e.get("id") or "")
+        info_rec = cached_info_map.get(eid)
+        if info_rec is None:
+            info_rec = combustion_physics.match_catalog_record(e, area_m2=area_m2)
+        enriched.append((e, info_rec))
+
     if selected_tiers:
         enriched = [(e, m) for e, m in enriched if m["threat_tier"] in selected_tiers]
 
@@ -180,8 +189,6 @@ def render(experiments_data):
             plot_bgcolor="rgba(0,0,0,0)",
         )
         st.plotly_chart(fig_funnel, use_container_width=True)
-
-    cached_info_map = combustion_physics.get_cached_mission_catalog_info(experiments_data, area_m2=area_m2)
 
     for idx, (exp, matched) in enumerate(enriched):
         exp_id = str(exp.get("id") or f"EXP-{idx}")

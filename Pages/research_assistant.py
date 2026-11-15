@@ -11,7 +11,7 @@ def _data_dir():
     return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Data")
 
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def _load_ntrs_catalog():
     path = os.path.join(_data_dir(), "ntrs_links.json")
     if os.path.exists(path):
@@ -23,7 +23,7 @@ def _load_ntrs_catalog():
     return []
 
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def _load_experiments():
     path = os.path.join(_data_dir(), "experiments.json")
     if os.path.exists(path):
@@ -120,7 +120,6 @@ def render():
 
     ntrs_docs = _load_ntrs_catalog()
     experiments = _load_experiments()
-    gemini_client = _get_gemini_client()
 
     mode_tabs = st.tabs(["Research Assistant (Q&A / Search)", "Metric Guide & Knowledge Base"])
 
@@ -177,6 +176,7 @@ def render():
             st.markdown("---")
             st.markdown(f"#### Query: *\"{active_query}\"*")
 
+            gemini_client = _get_gemini_client()
             ai_answered = False
             if gemini_client is not None:
                 with st.spinner("AI Flight Surgeon synthesizing citation-grounded response via Gemini API..."):
@@ -255,7 +255,7 @@ User Question: {active_query}
                                 safe_url = html.escape(url, quote=True) if url and url.lower().startswith(("http://", "https://")) else ""
                                 if safe_url and ntrs_id:
                                     st.markdown(
-                                        f"<div style='text-align:right;'><a href='{safe_url}' target='_blank' rel='noopener noreferrer' style='color:#02BFE7; font-family:DMMono; text-decoration:none; font-size:0.8rem;'>View NTRS ↗</a></div>",
+                                        f"<div style='text-align:right;'><a href='{safe_url}' target='_blank' rel='noopener noreferrer' style='color:#94A3B8; font-family:DMMono; text-decoration:none; font-size:0.8rem;'>View NTRS ↗</a></div>",
                                         unsafe_allow_html=True,
                                     )
                                 elif pdf_file:

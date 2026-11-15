@@ -80,13 +80,17 @@ def save_custom_preset(email=None, cfg=None):
     except Exception:
         pass
     PRESET_CONFIGS["Custom"] = cfg
+    st.session_state["_cached_custom_preset"] = cfg
+    st.session_state["_loaded_preset_user"] = st.session_state.get("auth_user")
     return cfg
 
 
 def ensure_preset_state():
     auth_user = st.session_state.get("auth_user")
-    saved_custom = load_custom_preset(auth_user)
-    PRESET_CONFIGS["Custom"] = saved_custom
+    if st.session_state.get("_loaded_preset_user") != auth_user or "_cached_custom_preset" not in st.session_state:
+        st.session_state["_cached_custom_preset"] = load_custom_preset(auth_user)
+        st.session_state["_loaded_preset_user"] = auth_user
+    PRESET_CONFIGS["Custom"] = st.session_state["_cached_custom_preset"]
 
     if "shared_env_preset" not in st.session_state:
         st.session_state["shared_env_preset"] = "ISS Microgravity (0g)"
@@ -1211,7 +1215,7 @@ def match_catalog_record(exp_record, area_m2=None):
     }
 
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def get_cached_mission_catalog_info(experiments_data, area_m2=1.0):
     cached = {}
     for idx, exp in enumerate(experiments_data or []):

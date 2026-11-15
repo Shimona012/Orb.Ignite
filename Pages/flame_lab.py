@@ -9,11 +9,12 @@ except ImportError:
     import combustion_physics
 
 
+@st.cache_data(show_spinner=False)
 def compute_field(g, o2_pct, flow, morph=None):
     #Doing a 4x4x4 grid of points to represent the flame in 3D space, with the shape and color of the flame changing based on the input parameters.
     #0g : sphere ; 1g: tear drop [Considered experimental data from NASA FLEX-2]
     #To be optimized into detecting different experimental categories before predicting and changing colours based on that
-    n_points = 32
+    n_points = 24
     xy_axis = np.linspace(-2.2, 2.2, n_points)
     z_axis = np.linspace(-1.5, 4.2, n_points)
     X, Y, Z = np.meshgrid(xy_axis, xy_axis, z_axis)
@@ -31,7 +32,7 @@ def compute_field(g, o2_pct, flow, morph=None):
     #Thermal Gradient using Gaussian decay (Asymptotic tail : value decreases as we move towards 0;  Unlike sharp or linear cutoffs, the drop-off starts slow near the peak, accelerates in the middle, and then flattens out smoothly at greater distances)
     temp_scale = morph["temp_scale"] if morph else (0.4 + 0.6 * ((o2_pct - 15.0) / 20.0))
     intensity = 1000.0 * temp_scale * np.exp(-Radius / (size_factor ** 2))
-    return X, Y, Z, intensity
+    return np.round(X, 3), np.round(Y, 3), np.round(Z, 3), np.round(intensity, 3)
 
 #Need to debug the movement, consider different cases, and give colour accurate representations from the NASA experiment observations.
 DYNAMIC_FLAME_SCALE = [

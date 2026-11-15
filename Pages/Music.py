@@ -80,6 +80,7 @@ TRACKS = [
     },
 ]
 
+@st.cache_data(show_spinner=False)
 def _load_vinyl_b64():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     icon_path = os.path.join(base_dir, "Data", "vinyl.png")
@@ -98,7 +99,7 @@ def render_header_player():
     <style>
         html, body {{ margin: 0; padding: 0; background: transparent; overflow: hidden; }}
     </style>
-    <div id="music-widget" style="display:flex; flex-direction:column; align-items:flex-end; font-family:Inter,sans-serif; user-select:none; width:100%; padding-top:14px;">
+    <div id="music-widget" style="display:flex; flex-direction:column; align-items:flex-end; font-family:Inter,sans-serif; user-select:none; width:100%; padding-top:4px; padding-right:8px; box-sizing:border-box;">
         <div id="vinyl-btn" title="Click: On/Mute | Double-click: Change track"
              style="position:relative; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:6px; padding:3px; box-sizing:border-box;">
             <img id="vinyl-img" src="data:image/png;base64,{vinyl_b64}"
@@ -143,11 +144,14 @@ def render_header_player():
         }}
 
         function updateUI() {{
+            if (window.frameElement) {{
+                window.frameElement.style.height = isOn ? "140px" : "56px";
+            }}
             if (isOn) {{
                 slash.style.display = "none";
                 img.style.opacity = "1";
                 label.textContent = tracks[idx].name;
-                label.style.color = "#02BFE7";
+                label.style.color = "#E8672A";
                 wrap.style.display = "block";
                 iframe.src = "https://open.spotify.com/embed/track/" + tracks[idx].id + "?utm_source=generator&theme=0";
             }} else {{
@@ -181,7 +185,7 @@ def render_header_player():
         }});
     </script>
     """
-    components.html(html_code, height=130)
+    components.html(html_code, height=56)
 
     with st.expander("NASA Audio / Offline Fallback", expanded=False):
         fallback_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Data", "MUSIC")
@@ -190,14 +194,17 @@ def render_header_player():
             {"name": "Moonlight Drive (Bensound)", "file": "bensound-moonlightdrive.mp3", "credit": "Bensound / Yunior Arronte | License: RUOL1IOWB4D33SIE"},
             {"name": "Time (Avanti)", "file": "Avanti - Time (freetouse.com).mp3", "credit": "Avanti / freetouse.com (Free Download)"},
         ]
+        options = ["Off (Select track to play)"] + [t["name"] for t in fallback_tracks]
         sel_name = st.selectbox(
             "Select Fallback Track",
-            [t["name"] for t in fallback_tracks],
+            options,
+            index=0,
             key="header_fb_music_sel",
             label_visibility="collapsed",
         )
-        track_obj = next((t for t in fallback_tracks if t["name"] == sel_name), fallback_tracks[0])
-        local_path = os.path.join(fallback_dir, track_obj["file"])
-        if os.path.exists(local_path):
-            st.audio(local_path, format="audio/mp3")
-            st.caption(track_obj["credit"])
+        track_obj = next((t for t in fallback_tracks if t["name"] == sel_name), None)
+        if track_obj:
+            local_path = os.path.join(fallback_dir, track_obj["file"])
+            if os.path.exists(local_path):
+                st.audio(local_path, format="audio/mp3")
+                st.caption(track_obj["credit"])
