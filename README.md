@@ -143,6 +143,7 @@ In the spirit of open science, academic honesty, and transparent engineering, th
 6. **UI Architecture, Atmosphere & Data Pipelines (`Dashboard.py`, `ambience.py`)**
    - **Streamlit Layout & Ingestion:** SI assisted in structuring the multi-page dashboard, responsive layout containers, and JSON/CSV data-ingestion routines.
    - **Dynamic Ambient Aurora:** SI was utilized to design the CSS radial-gradient drift animations that dynamically reflect ambient environment presets (ISS, Lunar Gateway, Mars Habitat, Earth Lab).
+   - **Theme Pull Cord:** SI was used to construct the interactive hanging pull cord component (`#orb-pull`), spring physics, and Moon/Sun dark/light theme toggle.
 
 7. **External Service Integrations & Debugging (`contact_us.py`, `Music.py`)**
    - **Supabase & Persistence:** SI was used to implement and debug the Supabase client connection, local JSON failovers, and secure database storage.

@@ -227,6 +227,18 @@ st.markdown(
         color: #0F172A !important;
         border-color: rgba(15, 23, 42, 0.18) !important;
     }}
+    [data-theme="light"] .stApp [data-testid="stCaptionContainer"],
+    [data-theme="light"] .stApp small {{
+        color: #475569 !important;
+    }}
+    [data-theme="light"] .stApp code {{
+        background: rgba(15, 23, 42, 0.06) !important;
+        color: #0F172A !important;
+        border: 1px solid rgba(15, 23, 42, 0.1) !important;
+    }}
+    [data-theme="light"] .stApp hr {{
+        border-color: rgba(15, 23, 42, 0.12) !important;
+    }}
     [data-theme="dark"] .stApp,
     .stApp[data-theme="dark"],
     [data-base-theme="dark"] .stApp {{
@@ -365,6 +377,7 @@ with st.sidebar:
 
 ambience.render_ambience(scenario_preset)
 
+#Used SI for pull chord
 components.html(
     """
     <script>
@@ -378,10 +391,10 @@ components.html(
             st.id = 'orb-pull-style';
             st.textContent =
                 '#orb-pull{position:fixed;top:0;right:clamp(1rem,3vw,2.5rem);z-index:999999;width:32px;pointer-events:none;display:flex;flex-direction:column;align-items:center;}' +
-                '#orb-pull .orb-chain{width:0;border-left:2px dotted #94A3B8;height:calc(22px + var(--pull,0px));transition:height 0.35s cubic-bezier(0.3,1.6,0.5,1);}' +
-                '#orb-pc{pointer-events:auto;width:30px;height:30px;margin-top:-2px;padding:0;border:0;background:transparent;cursor:grab;touch-action:none;display:grid;place-items:center;transition:transform 0.2s ease;}' +
+                '#orb-pull .orb-chain{width:0;border-left:2px dotted #94A3B8;height:calc(64px + var(--pull,0px));transition:height 0.35s cubic-bezier(0.3,1.6,0.5,1);}' +
+                '#orb-pc{pointer-events:auto;width:32px;height:32px;margin-top:-2px;padding:0;border:0;background:transparent;cursor:grab;touch-action:none;display:grid;place-items:center;transition:transform 0.2s ease;}' +
                 '#orb-pc:active{cursor:grabbing;}' +
-                '#orb-pc:hover{transform:scale(1.12);}' +
+                '#orb-pc:hover{transform:scale(1.14);}' +
                 '@media print{#orb-pull{display:none!important;}}';
             doc.head.appendChild(st);
         }
