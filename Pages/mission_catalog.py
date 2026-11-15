@@ -67,64 +67,14 @@ FUNNEL_ICON_HTML = f"""
 
 
 TIER_COLORS = {
-    "CRITICAL": "#FC3D21",
-    "HIGH": "#FF7F11",
-    "MODERATE": "#FFB302",
-    "LOW": "#02BFE7",
+    "CRITICAL": "#F87171",
+    "HIGH": "#FB923C",
+    "MODERATE": "#FBBF24",
+    "LOW": "#94A3B8",
 }
 
 
 def render(experiments_data):
-    st.markdown(
-        """
-        <style>
-        .orb-mission-hover-wrap {
-            position: relative;
-            display: inline-block;
-            cursor: help;
-        }
-        .orb-hover-badge {
-            display: inline-block;
-            margin-left: 8px;
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-size: 0.72rem;
-            font-family: 'DMMono', monospace;
-            background: rgba(2, 191, 231, 0.14);
-            color: #02BFE7;
-            border: 1px solid rgba(2, 191, 231, 0.35);
-            vertical-align: middle;
-        }
-        .orb-mission-hover-box {
-            visibility: hidden;
-            opacity: 0;
-            position: absolute;
-            z-index: 9999;
-            top: 115%;
-            left: 0;
-            min-width: 340px;
-            max-width: 460px;
-            padding: 12px 14px;
-            border-radius: 8px;
-            background: rgba(15, 23, 42, 0.96);
-            color: #E2E8F0;
-            border: 1px solid rgba(2, 191, 231, 0.45);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
-            font-size: 0.80rem;
-            line-height: 1.45;
-            transition: opacity 0.16s ease-in-out, visibility 0.16s ease-in-out;
-            pointer-events: none;
-            backdrop-filter: blur(8px);
-        }
-        .orb-mission-hover-wrap:hover .orb-mission-hover-box,
-        .orb-mission-hover-wrap:focus-within .orb-mission-hover-box {
-            visibility: visible;
-            opacity: 1;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
     st.markdown(f"### {FUNNEL_ICON_HTML}Mission Catalog Explorer", unsafe_allow_html=True)
     search_q = st.text_input("Search", placeholder="Experiment, fuel, phenomenon, or NTRS ID")
 
@@ -241,102 +191,45 @@ def render(experiments_data):
         if not ntrs_link and ntrs_raw:
             ntrs_num = ntrs_raw.replace("NASA-NTRS-", "").replace("NTRS-", "").strip()
             ntrs_link = f"https://ntrs.nasa.gov/citations/{ntrs_num}" if ntrs_num.isdigit() else f"https://ntrs.nasa.gov/search?q={urllib.parse.quote(ntrs_raw)}"
-        
         if ntrs_link and not ntrs_link.lower().startswith(("http://", "https://")):
             ntrs_link = ""
 
-        tier_color = TIER_COLORS.get(matched["threat_tier"], "#02BFE7")
+        tier = matched["threat_tier"]
+        tier_color = TIER_COLORS.get(tier, "#94A3B8")
         safe_name = html.escape(str(exp.get("name", "")))
-        safe_id = html.escape(exp_id)
-        safe_fuel = html.escape(str(exp.get("fuel_name", "")))
-        hover_html = info.get("hover_summary_html") or f"<b>{safe_name}</b><br/>Fuel: {safe_fuel}"
 
         with st.container(border=True):
-            c1, c2 = st.columns([4, 1])
-            with c1:
+            r1, r2 = st.columns([5, 1.5])
+            with r1:
                 st.markdown(
-                    f"""
-                    <div class="orb-mission-hover-wrap">
-                        <strong>{safe_name}</strong> <code>{safe_id}</code>
-                        <span class="orb-hover-badge">Hover Info</span>
-                        — <span style="color:{tier_color}; font-weight:700;">Threat: {matched['threat_score']}/100 ({matched['threat_tier']})</span>
-                        — <strong>Fuel:</strong> <code>{safe_fuel}</code> (<code>{matched['surety_pct']}% Surety</code>)
-                        <div class="orb-mission-hover-box">
-                            {hover_html}
-                        </div>
-                    </div>
-                    """,
+                    f"**{safe_name}** "
+                    f"<span style='color:#94A3B8; font-size:0.85rem;'>({html.escape(str(exp.get('mission', '')))} · {html.escape(str(exp.get('year', '')))})</span> — "
+                    f"<span style='color:{tier_color}; font-weight:600;'>Threat: {matched['threat_score']}/100 ({tier.title()})</span>",
                     unsafe_allow_html=True,
                 )
-                st.caption(
-                    f"{exp.get('platform')} | {exp.get('year')} | Area: {matched['area_regime']} | "
-                    f"EF: {matched['exposure_factor_EF']} | Lag: {matched['detection_lag_s']}s | Equation: {matched['equation_name']}"
-                )
-            with c2:
-                
-                if ntrs_raw or ntrs_link:
-                    label = html.escape(str(ntrs_raw or "NTRS Link"))
-                    safe_href = html.escape(ntrs_link, quote=True) if ntrs_link and ntrs_link.lower().startswith(("http://", "https://")) else ""
-                    if safe_href:
-                        st.markdown(
-                            f"<div style='text-align:right;'><a href='{safe_href}' target='_blank' rel='noopener noreferrer' style='color:#02BFE7; font-size:0.78rem; font-family:DMMono; text-decoration:none;'>{label}</a></div>",
-                            unsafe_allow_html=True,
-                        )
-                    else:
-                        st.markdown(
-                            f"<div style='text-align:right;'><span style='color:#8C9FB5; font-size:0.78rem; font-family:DMMono;'>{label}</span></div>",
-                            unsafe_allow_html=True,
-                        )
+                st.write(exp.get("key_phenomenon", ""))
+            with r2:
+                st.markdown(f"**Material:** `{exp.get('fuel_name', 'Unknown')}`")
+                st.caption(f"Platform: {exp.get('platform', 'ISS')}")
 
-            st.write(exp.get("key_phenomenon", ""))
-            st.caption(f"Spatial Area Effect: {matched['area_effect_summary']}")
+            with st.expander("View Mission Details & Astronaut Safety Takeaway", expanded=False):
+                d1, d2 = st.columns(2)
+                with d1:
+                    st.markdown(f"**Principal Investigator:** {info.get('investigator', 'NASA Team')}")
+                    st.markdown(f"**Test Facility:** {info.get('hardware_facility', 'ISS')}")
+                    st.markdown(f"**Burn Duration:** `{info.get('burn_duration_s', 0.0):.1f} seconds`")
+                    st.markdown(f"**Environment:** `{info.get('gravity_g', 0.0):.2f}g` | `{info.get('oxygen_pct', 21.0):.1f}% Oxygen` | `{info.get('pressure_atm', 1.0):.2f} atm`")
+                with d2:
+                    st.markdown(f"**Detection Challenge:** {info.get('detection_challenge', 'N/A')}")
+                    st.markdown(f"**Extinction Mechanism:** {info.get('extinction_mechanism', 'N/A')}")
+                    st.markdown(f"**Spacecraft Safety Takeaway:** {info.get('spacecraft_safety_insight', 'N/A')}")
 
-            act_c1, act_c2, act_c3 = st.columns([1.4, 1.6, 3.0])
-            dossier_key = f"mc_open_dossier_{exp_id}_{idx}"
-            with act_c1:
-                with st.popover("Quick Info", use_container_width=True):
-                    st.markdown(f"**{info.get('full_name', exp.get('name', ''))}**")
-                    st.markdown(f"**Facility:** `{info.get('hardware_facility', exp.get('platform', 'N/A'))}`")
-                    st.markdown(f"**Investigator:** {info.get('investigator', 'NASA Glenn Team')}")
-                    st.markdown(f"**Three Pillars:** `{info.get('three_pillars_focus', 'N/A')}`")
+                if ntrs_link:
+                    safe_href = html.escape(ntrs_link, quote=True)
+                    label = html.escape(str(ntrs_raw or exp_id))
                     st.markdown(
-                        f"**Test Envelope:** `{info.get('gravity_g', 0.0):.2f}g` | "
-                        f"`{info.get('oxygen_pct', 21.0):.1f}% O₂` | "
-                        f"`{info.get('pressure_atm', 1.0):.2f} atm` | "
-                        f"Burn: `{info.get('burn_duration_s', 0.0):.1f}s`"
+                        f"<div style='margin-top:6px;'><a href='{safe_href}' target='_blank' rel='noopener noreferrer' style='color:#94A3B8; font-size:0.82rem; font-family:DMMono, monospace; text-decoration:none;'>Open Official NASA Technical Report ({label}) ↗</a></div>",
+                        unsafe_allow_html=True,
                     )
-                    st.info(info.get("spacecraft_safety_insight", ""))
-            with act_c2:
-                is_open = st.session_state.get(dossier_key, False)
-                btn_label = "Hide Mission Dossier" if is_open else "Full Mission Dossier"
-                if st.button(btn_label, key=f"mc_click_info_{exp_id}_{idx}", use_container_width=True):
-                    st.session_state[dossier_key] = not is_open
-                    st.rerun()
-
-            if st.session_state.get(dossier_key, False):
-                with st.container(border=True):
-                    st.markdown(f"##### Cached Mission Dossier: {info.get('full_name', exp.get('name', ''))}")
-                    d1, d2 = st.columns(2)
-                    with d1:
-                        st.markdown(f"**Principal Investigator:** {info.get('investigator', 'N/A')}")
-                        st.markdown(f"**Hardware Facility:** `{info.get('hardware_facility', 'N/A')}`")
-                        st.markdown(f"**Three Pillars Focus:** `{info.get('three_pillars_focus', 'N/A')}`")
-                        st.markdown(f"**Cool Flame Observed:** `{'Yes' if info.get('cool_flame_observed') else 'No'}`")
-                    with d2:
-                        st.markdown(f"**Detection Challenge:** {info.get('detection_challenge', 'N/A')}")
-                        st.markdown(f"**Extinction Mechanism:** {info.get('extinction_mechanism', 'N/A')}")
-                        st.markdown(f"**Spacecraft Safety Insight:** {info.get('spacecraft_safety_insight', 'N/A')}")
-
-                    m1, m2, m3, m4 = st.columns(4)
-                    m1.metric("Burn Duration", f"{info.get('burn_duration_s', 0.0):.1f} s")
-                    m2.metric("Droplet Burn K", f"{info.get('burn_rate_mm_s2', 0.0)} mm²/s")
-                    m3.metric("Spread Rate V_f", f"{info.get('spread_rate_mm_s', 0.0)} mm/s")
-                    m4.metric("Radiative Loss", f"{info.get('q_rad_kw_m2', 0.0)} kW/m²")
-
-                    st.caption(info.get("equation_desc", ""))
-                    if info.get("equation_latex"):
-                        st.latex(info["equation_latex"])
-                    if ntrs_link:
-                        st.markdown(f"[Open NTRS Record ({ntrs_raw or exp_id}) ↗]({ntrs_link})")
 #black filter : <a href="https://www.flaticon.com/free-icons/filter" title="filter icons">Filter icons created by Kiranshastry - Flaticon</a>
 #white filter: <a href="https://www.flaticon.com/free-icons/filter" title="filter icons">Filter icons created by vectaicon - Flaticon</a>

@@ -419,48 +419,48 @@ def render():
     m5c_r2 = bm.get("model5c_delta_CO_ppm", {}).get("final_test_metrics", {}).get("r2", 0.514)
     psi_k_mae = bm.get("_psi117_validation", {}).get("psi117_cool_K_mae_mm2_s", 0.0378)
 
-    conf_extra = f"\n\n{pred['warning']}" if pred.get("warning") else ""
-    st.warning(
-        f"**Model Benchmark & Confidence Notice (`{pred['confidence_tier']}` | Trained `{ds_state.get('model_trained_at_utc', 'N/A')[:19]}`):** "
-        f"Flame Regime & Cool-Flame Classifier: **{m3_f1:.1f}% Macro-F1** ({m3_ba:.1f}% Balanced Acc) | "
-        f"Persistence Stage: **{m1a_f1:.1f}% Macro-F1** | "
-        f"Burn Duration MAE: **±{m1b_mae:.1f} s** ($R^2={m1b_r2:.2f}$) | "
-        f"Droplet Rate $K$: $R^2={m2a_r2:.2f}$ (PSI-117 Cool-Flame validation MAE `{psi_k_mae} mm²/s`) | "
-        f"Enclosure Gas Signatures ($\\Delta \\text{{O}}_2$ / $\\text{{CO}}$): $R^2={m5a_r2:.2f} / {m5c_r2:.2f}$."
+    conf_extra = f" — {pred['warning']}" if pred.get("warning") else ""
+    st.caption(
+        f"Model Benchmark & Confidence Notice ({pred['confidence_tier']} | Trained {ds_state.get('model_trained_at_utc', 'N/A')[:19]}): "
+        f"Flame Regime Classifier: {m3_f1:.1f}% Macro-F1 ({m3_ba:.1f}% Balanced Acc) · "
+        f"Persistence Stage: {m1a_f1:.1f}% Macro-F1 · "
+        f"Burn Duration MAE: ±{m1b_mae:.1f} s (R²={m1b_r2:.2f}) · "
+        f"Droplet Rate K: R²={m2a_r2:.2f} (PSI-117 MAE {psi_k_mae} mm²/s) · "
+        f"Enclosure Gas Signatures (ΔO₂ / CO): R²={m5a_r2:.2f} / {m5c_r2:.2f}."
         f"{conf_extra}"
     )
 
     
     evac_triggers = []
     if life_dmg["co_concentration_ppm"] >= 55.0:
-        evac_triggers.append(f"CO `{life_dmg['co_concentration_ppm']} ppm` breaches NASA 1-hr SMAC (`55 ppm`)")
+        evac_triggers.append(f"CO {life_dmg['co_concentration_ppm']} ppm breaches NASA 1-hr SMAC (55 ppm)")
     if life_dmg["toxic_formaldehyde_ch2o_mg_m3"] >= 1.5:
-        evac_triggers.append(f"Formaldehyde CH₂O `{life_dmg['toxic_formaldehyde_ch2o_mg_m3']} mg/m³` (>3× SMAC)")
+        evac_triggers.append(f"Formaldehyde CH₂O {life_dmg['toxic_formaldehyde_ch2o_mg_m3']} mg/m³ (>3× SMAC)")
     if life_dmg["ambient_o2_remaining_pct"] <= 16.5:
-        evac_triggers.append(f"Ambient O₂ drops to `{life_dmg['ambient_o2_remaining_pct']}%` (hypoxia zone)")
+        evac_triggers.append(f"Ambient O₂ drops to {life_dmg['ambient_o2_remaining_pct']}% (hypoxia zone)")
     if infra_dmg["radiative_heat_flux_kw_m2"] >= 18.0:
-        evac_triggers.append(f"Radiative heat flux `{infra_dmg['radiative_heat_flux_kw_m2']} kW/m²` threatens avionics & panels")
+        evac_triggers.append(f"Radiative heat flux {infra_dmg['radiative_heat_flux_kw_m2']} kW/m² threatens avionics & panels")
     if infra_dmg["peak_flame_temp_K"] >= 933.0:
-        evac_triggers.append(f"Peak temp `{infra_dmg['peak_flame_temp_K']} K` exceeds 6061-T6 Aluminum melt limit (`933 K`)")
+        evac_triggers.append(f"Peak temp {infra_dmg['peak_flame_temp_K']} K exceeds 6061-T6 Aluminum melt limit (933 K)")
     if infra_dmg["cabin_pressure_rise_kPa"] >= 15.0:
-        evac_triggers.append(f"Cabin overpressure ΔP `{infra_dmg['cabin_pressure_rise_kPa']} kPa` stresses module seals")
+        evac_triggers.append(f"Cabin overpressure ΔP {infra_dmg['cabin_pressure_rise_kPa']} kPa stresses module seals")
     if cool_reig["cool_flame_active_or_probable"] and oxygen >= 18.0:
-        evac_triggers.append(f"Invisible O₂-fed Cool Flame active (hot reignition risk ~`{cool_reig['estimated_hot_reignition_window_s']} s`)")
+        evac_triggers.append(f"Invisible O₂-fed Cool Flame active (hot reignition risk ~{cool_reig['estimated_hot_reignition_window_s']} s)")
     if composite_hazard >= 72.0 and not is_dust:
-        evac_triggers.append(f"Composite Hazard Score `{composite_hazard}/100`")
+        evac_triggers.append(f"Composite Hazard Score {composite_hazard}/100")
 
     if evac_triggers and est_burn_s > 0.1 and not is_dust:
         evac_html = (
-            '<div style="border: 2px solid #FF2E2E; background: rgba(255, 30, 30, 0.14); padding: 18px 20px; border-radius: 10px; margin: 10px 0 16px 0;">'
-            '<div style="color: #FF2E2E; font-size: 1.55rem; font-weight: 900; letter-spacing: 0.02em; line-height: 1.25;">'
-            'EVACUATION &amp; CRITICAL EMERGENCY MEASURE REQUIRED'
+            '<div style="border: 1px solid rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.07); padding: 12px 16px; border-radius: 8px; margin: 8px 0 14px 0;">'
+            '<div style="color: #F87171; font-size: 0.98rem; font-weight: 600; line-height: 1.35;">'
+            'Evacuation &amp; Emergency Precautions Recommended'
             '</div>'
-            '<div style="color: #FFE4E6; font-size: 1.02rem; font-weight: 700; margin-top: 8px;">'
-            'Immediate hatch isolation, crew evacuation from affected module, Portable Breathing Apparatus (PBA) donning, and full ECLSS airflow shutoff recommended.'
-            + (' Do NOT restore oxygen ventilation for at least 45 minutes — invisible Cool Flame hot reignition risk detected!' if cool_reig['cool_flame_active_or_probable'] else '')
+            '<div style="color: inherit; opacity: 0.9; font-size: 0.88rem; font-weight: 400; margin-top: 4px; line-height: 1.45;">'
+            'Hatch isolation, crew relocation from the affected module, Portable Breathing Apparatus (PBA) donning, and ECLSS airflow shutoff are advised.'
+            + (' Maintain a 45-minute ventilation hold before restoring oxygen airflow due to cool-flame reignition risk.' if cool_reig['cool_flame_active_or_probable'] else '')
             + '</div>'
-            '<div style="color: #FCA5A5; font-size: 0.90rem; margin-top: 6px;">'
-            f"Triggered by: {' | '.join(evac_triggers)}"
+            '<div style="color: #94A3B8; font-size: 0.82rem; margin-top: 4px;">'
+            f"Factors: {' · '.join(evac_triggers)}"
             '</div>'
             '</div>'
         )
@@ -476,17 +476,17 @@ def render():
         m1.metric("Predicted Burn Duration", f"{est_burn_s} s", delta=dur_info["persistence_stage"].replace("_", " "))
         m2.metric("Flame Regime", reg_info["fire_regime"].replace("_", " "))
         m3.metric("Droplet Burn K / d_ext", f"{kin_info['burning_rate_K_mm2_s']} mm²/s", delta=f"d_ext {kin_info['extinction_diameter_mm']} mm")
-        m4.metric("Composite Hazard Score", f"{composite_hazard} / 100", delta=threat["threat_tier"])
+        m4.metric("Composite Hazard Score", f"{composite_hazard} / 100", delta=threat["threat_tier"].title())
 
-        st.info(
-            f"**Duration & Optics:** {dur_info['duration_statement']} | "
-            f"**Optical Signature:** `{reg_info['flame_colour']}` | "
-            f"**Physics Behavior:** {state['optical_regime_desc']}"
+        st.markdown(
+            f"**Duration & Optics:** {dur_info['duration_statement']} · "
+            f"**Optical Signature:** `{reg_info['flame_colour']}` · "
+            f"**Behavior:** {state['optical_regime_desc']}"
         )
         if cool_reig["cool_flame_active_or_probable"]:
-            st.error(
-                f"**Cool Flame Alert (`P = {cool_reig['cool_flame_probability']*100:.1f}%`):** "
-                f"{cool_reig['mechanism_note']} Estimated secondary hot reignition window: `{cool_reig['estimated_hot_reignition_window_s']} s`."
+            st.caption(
+                f"Cool Flame Note (P = {cool_reig['cool_flame_probability']*100:.1f}%): "
+                f"{cool_reig['mechanism_note']} Estimated secondary reignition window: ~{cool_reig['estimated_hot_reignition_window_s']} s."
             )
 
     
@@ -536,23 +536,23 @@ def render():
         if_c1, if_c2 = st.columns(2)
         with if_c1:
             st.markdown(
-                f"- **If LESS SPACE / Confined Bay (`{confined_area} m²` vs `{area_m2:.1f} m²`):** "
+                f"- **If Confined Space (`{confined_area} m²` vs `{area_m2:.1f} m²`):** "
                 f"Thermal wall feedback traps heat, shifting combustion toward cool-flame / smouldering incomplete oxidation. "
-                f"CO spikes from `{life_dmg['co_concentration_ppm']} ppm` → **`{tight_co} ppm`**, CH₂O climbs to **`{tight_ch2o} mg/m³`**, "
-                f"and chamber ΔP jumps to **`{tight_dp} kPa`** with longer HCl/HF wall adsorption sensor lag."
+                f"CO rises from `{life_dmg['co_concentration_ppm']} ppm` to `{tight_co} ppm`, CH₂O reaches `{tight_ch2o} mg/m³`, "
+                f"and chamber ΔP increases to `{tight_dp} kPa` with longer HCl/HF wall adsorption sensor lag."
             )
             st.markdown(
-                f"- **If MORE SPACE / Open Module (`> 2.5 m²`):** Exposed solid pyrolysis surface accelerates ($\\propto A^{{0.42}}$), "
+                f"- **If Open Module (`> 2.5 m²`):** Exposed solid pyrolysis surface increases ($\\propto A^{{0.42}}$), "
                 f"while 0g spherical smoke dispersion dilutes particulates away from ceiling detectors, extending detection lag."
             )
         with if_c2:
             st.markdown(
-                f"- **If COOL FLAME Enters (`500–800 K`, NO Visible Soot):** Visible cameras see total extinguishment, yet ECLSS O₂ supply sustains silent fuel consumption. "
-                f"Restoring airflow or opening vents triggers sudden **hot reignition within `~{cool_reig['estimated_hot_reignition_window_s'] or 35.0} s`**."
+                f"- **If Cool Flame Forms (`500–800 K`, No Visible Soot):** Optical cameras may show extinguishment while ECLSS O₂ supply sustains slow fuel consumption. "
+                f"Restoring airflow or opening vents can trigger secondary ignition within `~{cool_reig['estimated_hot_reignition_window_s'] or 35.0} s`."
             )
             st.markdown(
-                f"- **If VENTILATION Drops `< 2 cm/s` vs Surges `> 15 cm/s`:** At `0g`, low flow (`<2 cm/s`) starves O₂ and cools flame toward radiative quench; "
-                f"high flow (`>15 cm/s`) blows O₂ into the pyrolysis zone like a blowtorch, driving heat flux above `{infra_dmg['radiative_heat_flux_kw_m2']} kW/m²`."
+                f"- **If Ventilation Changes (`< 2 cm/s` vs `> 15 cm/s`):** At `0g`, low flow (`<2 cm/s`) starves O₂ and cools flame toward radiative quench; "
+                f"high flow (`>15 cm/s`) feeds O₂ directly into the pyrolysis zone, driving heat flux above `{infra_dmg['radiative_heat_flux_kw_m2']} kW/m²`."
             )
 
     
@@ -620,9 +620,7 @@ def render():
     with st.container(border=True):
         st.markdown("##### Save Scenario to Account & History")
         if not auth_user:
-            st.warning("You are not signed in. Please sign in via the sidebar **User Authentication** panel to save, rank, rename, and sync scenarios to your Profile tab.")
-            if st.button("Save Scenario (Sign In Required)", key="fp_save_guest_btn"):
-                st.error("Please sign in from the sidebar User Authentication panel first so this scenario can sync to your account.")
+            st.caption("Sign in via the sidebar User Authentication panel to save, rank, rename, and sync scenarios to your Profile tab.")
         else:
             sv1, sv2, sv3 = st.columns([3.0, 1.2, 1.4])
             default_scen_name = f"{model_fuel} ({gravity:.2f}g, {oxygen:.0f}% O₂)"
@@ -682,9 +680,9 @@ def render():
                         stale_ids.add(sc.get("id"))
 
                 if stale_ids:
-                    st.warning(
-                        f"**Update Recommended (`{len(stale_ids)}` outdated scenario(s)):** New dataset files or records were added in Admin "
-                        f"(and models retrained at `{latest_model_ts[:19]}`). Please click **Rerun & Update** on highlighted scenarios below to refresh results."
+                    st.caption(
+                        f"Update Recommended ({len(stale_ids)} outdated scenario(s)): New dataset files or records were added in Admin "
+                        f"(models retrained at {latest_model_ts[:19]}). Click Rerun & Update on scenarios below to refresh results."
                     )
 
                 rank_mode = st.selectbox(
@@ -738,7 +736,7 @@ def render():
                     with st.container(border=True):
                         h_c1, h_c2 = st.columns([3.5, 2.5])
                         with h_c1:
-                            badge = "⚠️ **Rerun & Update Needed**" if is_stale else "✅ **Synced & Current**"
+                            badge = "Rerun Recommended" if is_stale else "Up to date"
                             st.markdown(f"**Rank #{pos}: {sc.get('name', 'Untitled')}** (User Priority `#{sc.get('user_rank', 3)}`) — {badge}")
                             st.caption(
                                 f"Fuel: `{sc.get('model_fuel', 'Heptane')}` | `{inp.get('gravity_g', 0.0):.2f}g` | `{inp.get('o2_pct', 21.0):.1f}% O₂` | "
