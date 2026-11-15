@@ -76,13 +76,18 @@ def render_ambience(preset_name=None):
     [data-theme="light"] [data-testid="stAppViewContainer"],
     .stApp[data-theme="light"] [data-testid="stAppViewContainer"],
     [data-base-theme="light"] [data-testid="stAppViewContainer"] {{
-        background-color: #f8fafc !important;
+        background-color: #F8FAFC !important;
         background-image:
             radial-gradient(ellipse 65% 55% at 20% 18%, {c1} 0%, transparent 68%),
             radial-gradient(ellipse 60% 50% at 82% 24%, {c2} 0%, transparent 65%),
-            radial-gradient(ellipse 70% 60% at 50% 88%, {c3} 0%, transparent 72%),
             radial-gradient(ellipse 45% 40% at 75% 78%, {c4} 0%, transparent 60%) !important;
         background-attachment: fixed !important;
+    }}
+
+    [data-theme="light"] .stApp::before,
+    .stApp[data-theme="light"]::before,
+    [data-base-theme="light"] .stApp::before {{
+        opacity: 0.28 !important;
     }}
 
     [data-theme="dark"] [data-testid="stAppViewContainer"],
