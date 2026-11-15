@@ -610,7 +610,7 @@ else:
     st.markdown(
         """
         <div style="text-align: center; margin-top: 2.5rem; margin-bottom: 0.75rem; font-size: 0.82rem; color: #8C9FB5; font-style: italic; letter-spacing: 0.02em; line-height: 1.6;">
-            <div>Afterall...</div>
+            <div style="margin-bottom: 0.85rem;">Afterall...</div>
             <div>Not all flames are meant to be flown too close to.</div>
         </div>
         """,
