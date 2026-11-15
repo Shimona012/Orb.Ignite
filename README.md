@@ -148,7 +148,7 @@ In the spirit of open science, academic honesty, and transparent engineering, th
    - **Supabase & Persistence:** SI was used to implement and debug the Supabase client connection, local JSON failovers, and secure database storage.
    - **Spotify & Audio Integration:** SI was used to debug the Spotipy API integration, player widget styling, and offline NASA audio fallback handling.
 
-*And last, SI was used to generate the SI sections :)*
+*And last, SI was used to generate this SI section :)*
 
 ## Built With
 
