@@ -149,10 +149,10 @@ st.markdown(
     }}
     .orb-brand-tag {{
         font-family: 'DMMono', monospace;
-        font-size: 0.72rem;
+        font-size: 0.85rem;
+        font-style: italic;
         color: #8C9FB5;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.04em;
     }}
 
 
@@ -266,7 +266,7 @@ with col_hdr:
         """
         <div class="orb-topbar">
             <span class="orb-brand-title">Orb.Ignite</span>
-            <span class="orb-brand-tag">TO BE ADDED TAGLINE</span>
+            <span class="orb-brand-tag"><em>Orbiting the Flames of Flight.</em></span>
         </div>
         """,
         unsafe_allow_html=True

@@ -374,6 +374,21 @@ def render():
         )
 
     
+    # User prediction trigger to prevent overwhelming warnings on initial open
+    if "fp_has_predicted" not in st.session_state:
+        st.session_state["fp_has_predicted"] = False
+
+    c_run1, c_run2 = st.columns([1.5, 4.5])
+    with c_run1:
+        if st.button("Run Fire Prediction", key="fp_run_prediction_btn", use_container_width=True, type="primary"):
+            st.session_state["fp_has_predicted"] = True
+    with c_run2:
+        if not st.session_state["fp_has_predicted"]:
+            st.caption("Adjust sliders above, then click **Run Fire Prediction** to generate outcome models, danger scores, and safety actions.")
+
+    if not st.session_state["fp_has_predicted"]:
+        return
+
     ds_state = combustion_physics.get_dataset_and_model_state()
     predictor, _ = get_cached_fire_predictor(ds_state["bundle_mtime"])
     pred, earth_pred, state, model_fuel, is_dust = _run_scenario_prediction(

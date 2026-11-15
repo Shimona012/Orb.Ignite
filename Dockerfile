@@ -1,4 +1,3 @@
-#SI
 # Base image with Python 3.11 slim
 FROM python:3.11-slim
 
