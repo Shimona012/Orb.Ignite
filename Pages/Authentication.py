@@ -304,6 +304,20 @@ def render_sidebar_auth():
         role_badge = "Administrator" if is_admin else current_role
         st.markdown(f"**Status:** `{role_badge}`")
         st.caption(f"Signed in as `{user}`")
+        if is_admin:
+            msg_path = os.path.join(_data_dir(), "contact_messages.json")
+            m_count = 0
+            if os.path.exists(msg_path):
+                try:
+                    with open(msg_path, "r", encoding="utf-8") as mf:
+                        m_data = json.load(mf)
+                        m_count = len(m_data) if isinstance(m_data, list) else 0
+                except Exception:
+                    m_count = 0
+            inbox_btn_label = f"📬 Open Admin Inbox ({m_count})" if m_count > 0 else "📬 Open Admin Inbox"
+            if st.button(inbox_btn_label, key="auth_btn_open_inbox_sb", use_container_width=True):
+                st.session_state["show_admin_portal"] = True
+                st.rerun()
         if st.button("Sign Out", key="auth_btn_signout", use_container_width=True):
             if client is not None and not is_admin:
                 try:
@@ -742,23 +756,63 @@ def render_admin_portal():
         "To set your own custom password, add `ADMIN_PASSWORD = \"your_secret_password\"` in `.streamlit/secrets.toml` or set the system environment variable `ADMIN_PASSWORD`."
     )
 
-    st.subheader("Contact Messages")
+    st.subheader("📬 Admin Inbox & Researcher Messages")
     messages = []
-    try:
-        resp = client.table("contact_messages").select("*").execute()
-        messages = resp.data or []
-    except Exception:
-        msg_path = os.path.join(_data_dir(), "contact_messages.json")
-        if os.path.exists(msg_path):
-            try:
-                with open(msg_path, "r", encoding="utf-8") as mf:
-                    messages = json.load(mf)
-            except Exception:
-                messages = []
+    msg_path = os.path.join(_data_dir(), "contact_messages.json")
+    if os.path.exists(msg_path):
+        try:
+            with open(msg_path, "r", encoding="utf-8") as mf:
+                data = json.load(mf)
+                messages = data if isinstance(data, list) else []
+        except Exception:
+            messages = []
+    if client is not None:
+        try:
+            resp = client.table("contact_messages").select("*").execute()
+            if resp.data:
+                existing_keys = {f"{m.get('email')}_{m.get('created_at')}" for m in messages}
+                for sm in resp.data:
+                    if f"{sm.get('email')}_{sm.get('created_at')}" not in existing_keys:
+                        messages.append(sm)
+        except Exception:
+            pass
+
     if messages:
-        st.dataframe(pd.DataFrame(messages), use_container_width=True)
+        st.caption(f"Showing **{len(messages)}** message(s) stored in the Admin Inbox (`Data/contact_messages.json`).")
+        for idx, m in enumerate(reversed(messages)):
+            real_idx = len(messages) - 1 - idx
+            m_name = m.get("name", "Anonymous")
+            m_email = m.get("email", "N/A")
+            m_rcv = m.get("receiver", "Administrator")
+            m_time = m.get("created_at", "")[:19].replace("T", " ") + " UTC" if m.get("created_at") else ""
+            m_body = m.get("message", "")
+
+            with st.expander(f"✉️ {m_name} ({m_email}) · Target: {m_rcv} [{m_time}]", expanded=(idx == 0)):
+                st.markdown(f"**From:** {m_name} (`{m_email}`)")
+                st.markdown(f"**Routed To:** `{m_rcv}` | **Timestamp:** `{m_time}`")
+                st.text_area("Message Content", value=m_body, height=100, key=f"adm_msg_body_{real_idx}", disabled=True)
+                col_rep, col_del = st.columns([1.5, 1.5])
+                with col_rep:
+                    st.markdown(
+                        f"<a href='mailto:{m_email}?subject=Re:%20Orb.Ignite%20Inquiry' target='_blank' rel='noopener noreferrer' style='text-decoration:none;'>"
+                        f"<button type='button' style='padding:6px 14px;border-radius:6px;cursor:pointer;background:#02BFE7;color:#fff;border:none;font-weight:600;'>Reply via Email ↗</button></a>",
+                        unsafe_allow_html=True,
+                    )
+                with col_del:
+                    if st.button("Delete Message", key=f"adm_del_msg_{real_idx}"):
+                        messages.pop(real_idx)
+                        with open(msg_path, "w", encoding="utf-8") as mf:
+                            json.dump(messages, mf, indent=2)
+                        st.success("Message removed.")
+                        st.rerun()
+
+        if st.button("Clear All Messages", key="adm_btn_clear_all_msgs"):
+            with open(msg_path, "w", encoding="utf-8") as mf:
+                json.dump([], mf, indent=2)
+            st.success("All messages cleared.")
+            st.rerun()
     else:
-        st.caption("No messages yet.")
+        st.info("No incoming messages in the Admin Inbox.")
 
 
 if __name__ == "__main__":

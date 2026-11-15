@@ -108,6 +108,27 @@ st.markdown(
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }}
 
+    [data-testid="stSidebar"],
+    section[data-testid="stSidebar"],
+    [data-testid="stSidebarContent"],
+    div[data-testid="stSidebarUserContent"] {{
+        overflow-y: auto !important;
+        max-height: 100vh !important;
+        overscroll-behavior: contain !important;
+        -webkit-overflow-scrolling: touch !important;
+    }}
+
+    [data-testid="stSidebarContent"]::-webkit-scrollbar {{
+        width: 6px;
+    }}
+    [data-testid="stSidebarContent"]::-webkit-scrollbar-thumb {{
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+    }}
+    [data-testid="stSidebarContent"] > div:first-child {{
+        padding-bottom: 4rem !important;
+    }}
+
 
     .block-container {{
         padding-top: 1.5rem !important;
