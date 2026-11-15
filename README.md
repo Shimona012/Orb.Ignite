@@ -91,6 +91,38 @@ Run the Streamlit application using the following command:
 streamlit run Pages/Dashboard.py
 ```
 
+## Transparency & Super Intelligence (SI) Disclosure
+
+In the spirit of open science, academic honesty, and transparent engineering, this project openly discloses where and how **Super Intelligence (SI) / AI assistance** was utilized during the development of *Orb.Ignite*. All SI-assisted modules were driven by human literature research, engineered with domain-specific microgravity physics, and cross-verified against official NASA Physical Sciences Informatics (PSI) test data and technical reports.
+
+### Detailed Breakdown of SI Usage by Component:
+
+1. **Combustion Physics & Literature Compilation (`combustion_physics.py`)**
+   - **Research Synthesis:** SI was utilized to structure, synthesize, and compile diverse, disparate data across NASA microgravity combustion experiments (FLEX, Saffire, SoFIE, ACME, BASS, SAME, SOFBALL) from human literature research into a unified mathematical and physical specification.
+   - **Model Engineering & Dynamic Retraining:** SI assisted with the technicalities of the hybrid physics-ML feature representations, mathematical boundary checks, and automated retraining pipelines.
+
+2. **Machine Learning Model Training & Analysis (`fire_predictor.py`, `train_fire_models.py`)**
+   - **Training Pipelines & Dataset Curation:** SI was heavily utilized in architecting the multi-target XGBoost training pipelines, identifying optimal dataset splits, calibrating sample weights, and analyzing evaluation metrics (Macro-F1, Balanced Accuracy, and MAE against PSI-117 digitized experimental curves).
+   - **Inference Integration:** Implementing the three-tier confidence classification and mapping human flight test parameters to ML model feature spaces.
+
+3. **3D Flame Simulation & Geometry (`flame_lab.py`)**
+   - **Morphology Field Calculations:** SI was used to scaffold and debug the 3D scalar intensity field equations, mock calculations, and buoyancy-stretch transforms (spherical in 0g vs. elongated teardrop in 1g) before calibrating with NASA FLEX-2 observation parameters.
+
+4. **Mission Catalog & Data Exploration (`mission_catalog.py`)**
+   - **Search & Filter Logic:** SI assisted in debugging multi-field search algorithms (by mission name, fuel category, and NTRS ID) and dataset filtering logic.
+   - **Threat Hierarchy Funnel:** SI was used to construct the interactive Plotly funnel visualization depicting mission threat tiers across varying enclosure scales.
+
+5. **Scientific Representation & Domain Knowledge Base (`KnowledgeBase.py`)**
+   - **Scientific Language & Formatting:** SI was used to ensure rigorous, scientifically precise language, proper mathematical LaTeX notation (e.g. Spalding Transfer numbers, Damköhler numbers, Grashof/Rayleigh ratios), and clean formatting of technical definitions.
+
+6. **UI Architecture, Atmosphere & Data Pipelines (`Dashboard.py`, `ambience.py`)**
+   - **Streamlit Layout & Ingestion:** SI assisted in structuring the multi-page dashboard, responsive layout containers, and JSON/CSV data-ingestion routines.
+   - **Dynamic Ambient Aurora:** SI was utilized to design the CSS radial-gradient drift animations that dynamically reflect ambient environment presets (ISS, Lunar Gateway, Mars Habitat, Earth Lab).
+
+7. **External Service Integrations & Debugging (`contact_us.py`, `Music.py`)**
+   - **Supabase & Persistence:** SI was used to implement and debug the Supabase client connection, local JSON failovers, and secure database storage.
+   - **Spotify & Audio Integration:** SI was used to debug the Spotipy API integration, player widget styling, and offline NASA audio fallback handling.
+
 ## Built With
 
 * **Streamlit** - Web application framework
