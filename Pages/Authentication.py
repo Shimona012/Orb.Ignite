@@ -1,6 +1,8 @@
 #Authtenticate for editing and admin uses, admins can edit/add/delete datasets, presets etc.
+from datetime import datetime, timezone
 import json
 import os
+import re
 import pandas as pd
 import streamlit as st
 from supabase import create_client
@@ -31,6 +33,97 @@ def _get_supabase_client():
 
 def _data_dir():
     return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Data")
+
+
+def _users_file_path():
+    return os.path.join(_data_dir(), "users.json")
+
+
+def _load_users_file():
+    p = _users_file_path()
+    if os.path.exists(p):
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                users = json.load(f)
+                if isinstance(users, list) and users:
+                    return users
+        except Exception:
+            pass
+    admin_email = os.getenv("ADMIN_EMAIL", "admin@orbignite.org")
+    default_users = [
+        {"email": admin_email, "role": "Administrator", "created_at": datetime.now(timezone.utc).isoformat()}
+    ]
+    _save_users_file(default_users)
+    return default_users
+
+
+def _save_users_file(users):
+    p = _users_file_path()
+    try:
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(users, f, indent=2)
+    except Exception:
+        pass
+
+
+def _get_user_role(email):
+    if not email:
+        return "Viewer"
+    clean_e = email.strip().lower()
+    admin_email = None
+    try:
+        admin_email = st.secrets.get("ADMIN_EMAIL") or st.secrets.get("admin_email")
+    except Exception:
+        pass
+    admin_email = (admin_email or os.getenv("ADMIN_EMAIL", "admin@orbignite.org")).lower()
+    if clean_e in (admin_email, "admin"):
+        return "Administrator"
+    users = _load_users_file()
+    for u in users:
+        if u.get("email", "").strip().lower() == clean_e:
+            return u.get("role", "Researcher")
+    return "Researcher"
+
+
+def _set_user_role(email, new_role):
+    clean_e = email.strip().lower()
+    users = _load_users_file()
+    found = False
+    for u in users:
+        if u.get("email", "").strip().lower() == clean_e:
+            u["role"] = new_role
+            found = True
+            break
+    if not found:
+        users.append({
+            "email": clean_e,
+            "role": new_role,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+    _save_users_file(users)
+
+
+def _validate_password_strength(password):
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long."
+    if not re.search(r"[A-Z]", password):
+        return False, "Password must contain at least one uppercase letter (A-Z)."
+    if not re.search(r"[a-z]", password):
+        return False, "Password must contain at least one lowercase letter (a-z)."
+    if not re.search(r"\d", password):
+        return False, "Password must contain at least one number (0-9)."
+    if not re.search(r"[@$!%*?&#^+=_\-~]", password):
+        return False, "Password must contain at least one special character (@$!%*?&#^+=_-~)."
+    return True, ""
+
+
+def _validate_email_format(email):
+    if not email:
+        return False
+    if email.strip().lower() in ("admin", "admin@orbignite.org"):
+        return True
+    pattern = r"^[\w\.\+\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-\.]+$"
+    return bool(re.match(pattern, email.strip()))
 
 
 def _load_experiments_file():
@@ -156,7 +249,10 @@ def render_sidebar_auth():
     st.markdown("#### User Authentication")
 
     if user:
-        role_badge = "Administrator" if is_admin else "Researcher"
+        current_role = _get_user_role(user)
+        is_admin = is_admin or (current_role == "Administrator")
+        st.session_state["is_admin"] = is_admin
+        role_badge = "Administrator" if is_admin else current_role
         st.markdown(f"**Status:** `{role_badge}`")
         st.caption(f"Signed in as `{user}`")
         if st.button("Sign Out", key="auth_btn_signout", use_container_width=True):
@@ -169,6 +265,11 @@ def render_sidebar_auth():
             st.session_state.pop("admin_user", None)
             st.session_state["is_admin"] = False
             st.session_state["show_admin_portal"] = False
+            try:
+                from Pages import combustion_physics
+                combustion_physics.ensure_preset_state()
+            except Exception:
+                pass
             st.rerun()
     else:
         st.caption("Access experimental controls or admin records.")
@@ -176,57 +277,68 @@ def render_sidebar_auth():
             auth_tab1, auth_tab2, auth_tab3 = st.tabs(["Sign In", "Sign Up", "Admin"])
 
             with auth_tab1:
-                with st.form("sidebar_signin_form"):
-                    u_email = st.text_input("Email", key="u_sign_in_email")
-                    u_pw = st.text_input("Password", type="password", key="u_sign_in_pw")
+                with st.form("sidebar_signin_form", clear_on_submit=True):
+                    u_email = st.text_input("Email", placeholder="researcher@agency.org", key="u_sign_in_email")
+                    u_pw = st.text_input("Password", type="password", placeholder="Enter your password", key="u_sign_in_pw")
                     u_submit = st.form_submit_button("Sign In as Researcher", use_container_width=True)
                     if u_submit:
                         if not u_email or not u_pw:
                             st.error("Please enter email and password.")
+                        elif not _validate_email_format(u_email):
+                            st.error("Please enter a valid email address.")
                         elif client is not None:
                             try:
                                 res = client.auth.sign_in_with_password({"email": u_email.strip(), "password": u_pw})
                                 if res.user:
+                                    role = _get_user_role(res.user.email)
                                     st.session_state["auth_user"] = res.user.email
-                                    st.session_state["is_admin"] = False
+                                    st.session_state["is_admin"] = (role == "Administrator")
+                                    try:
+                                        from Pages import combustion_physics
+                                        combustion_physics.ensure_preset_state()
+                                    except Exception:
+                                        pass
                                     st.success(f"Welcome, {res.user.email}!")
                                     st.rerun()
                             except Exception as exc:
                                 st.error(f"Sign in failed: {exc}")
                         else:
+                            role = _get_user_role(u_email)
                             st.session_state["auth_user"] = u_email.strip()
-                            st.session_state["is_admin"] = False
-                            st.success("Signed in (Local Session).")
+                            st.session_state["is_admin"] = (role == "Administrator")
+                            try:
+                                from Pages import combustion_physics
+                                combustion_physics.ensure_preset_state()
+                            except Exception:
+                                pass
+                            st.success(f"Signed in as {role} (Local Session).")
                             st.rerun()
 
             with auth_tab2:
-                with st.form("sidebar_signup_form"):
-                    su_email = st.text_input("Email", key="u_sign_up_email")
-                    su_pw = st.text_input("Password (min 6 chars)", type="password", key="u_sign_up_pw")
+                st.warning(
+                    "Notice: No real live admin exists right now. Induction of administrative privileges is handled developer-side. "
+                    "User sign-ups are disabled for this demonstration phase."
+                )
+                with st.form("sidebar_signup_form", clear_on_submit=True):
+                    su_email = st.text_input("Email", placeholder="researcher@agency.org", key="u_sign_up_email")
+                    su_pw = st.text_input(
+                        "Password (min 8 chars, 1 uppercase, 1 num, 1 special)",
+                        type="password",
+                        placeholder="e.g. Apollo#2026",
+                        key="u_sign_up_pw",
+                    )
                     su_submit = st.form_submit_button("Register Account", use_container_width=True)
                     if su_submit:
-                        if not su_email or len(su_pw) < 6:
-                            st.error("Please enter a valid email and minimum 6-character password.")
-                        elif client is not None:
-                            try:
-                                res = client.auth.sign_up({"email": su_email.strip(), "password": su_pw})
-                                if res.user:
-                                    st.session_state["auth_user"] = res.user.email
-                                    st.session_state["is_admin"] = False
-                                    st.success("Account created! Check email if verification is required.")
-                                    st.rerun()
-                            except Exception as exc:
-                                st.error(f"Registration failed: {exc}")
-                        else:
-                            st.session_state["auth_user"] = su_email.strip()
-                            st.session_state["is_admin"] = False
-                            st.success("Account registered locally.")
-                            st.rerun()
+                        st.warning("User sign-ups are currently disabled. Admin induction is handled on the developer side.")
 
             with auth_tab3:
-                with st.form("sidebar_admin_login_form"):
-                    adm_email = st.text_input("Admin Email (or 'admin')", value="admin@orbignite.org", key="u_adm_email")
-                    adm_pw = st.text_input("Admin Password", type="password", key="u_adm_pw")
+                st.info(
+                    "Notice: Demonstration mode. Default demo credentials are provided as placeholders below. "
+                    "No real live admin exists right now; admin induction is handled developer-side."
+                )
+                with st.form("sidebar_admin_login_form", clear_on_submit=True):
+                    adm_email = st.text_input("Admin Email (or 'admin')", placeholder="admin@orbignite.org", key="u_adm_email")
+                    adm_pw = st.text_input("Admin Password", type="password", placeholder="orb-admin", key="u_adm_pw")
                     adm_submit = st.form_submit_button("Unlock Admin Portal", use_container_width=True)
                     if adm_submit:
                         ok, adm_id = _verify_admin_credentials(adm_email, adm_pw, client)
@@ -235,10 +347,15 @@ def render_sidebar_auth():
                             st.session_state["admin_user"] = adm_id
                             st.session_state["is_admin"] = True
                             st.session_state["show_admin_portal"] = True
+                            try:
+                                from Pages import combustion_physics
+                                combustion_physics.ensure_preset_state()
+                            except Exception:
+                                pass
                             st.success("Admin unlocked.")
                             st.rerun()
                         else:
-                            st.error("Invalid admin credentials.")
+                            st.error("Invalid admin credentials. Check password or environment settings.")
 
 
 def render_admin_portal():
@@ -248,10 +365,10 @@ def render_admin_portal():
     user = st.session_state.get("admin_user") or st.session_state.get("auth_user")
 
     if not is_admin:
-        st.info("Administrator credentials required to modify flight records and document links.")
-        with st.form("admin_login_direct_form"):
-            email = st.text_input("Admin Email", value="admin@orbignite.org")
-            password = st.text_input("Admin Password", type="password")
+        st.info("Demonstration Mode: Default demo credentials are shown as placeholders below. No real live admin exists currently; administrative induction is performed developer-side.")
+        with st.form("admin_login_direct_form", clear_on_submit=True):
+            email = st.text_input("Admin Email", placeholder="admin@orbignite.org", key="adm_direct_email")
+            password = st.text_input("Admin Password", type="password", placeholder="orb-admin", key="adm_direct_pw")
             submitted = st.form_submit_button("Sign In as Admin")
             if submitted:
                 ok, adm_id = _verify_admin_credentials(email, password, client)
@@ -439,6 +556,37 @@ def render_admin_portal():
             st.rerun()
     else:
         st.caption("No NTRS links indexed yet.")
+
+    st.subheader("User Directory & Role Management")
+    st.caption("Inspect registered researcher accounts and assign administrative or viewer roles.")
+    users = _load_users_file()
+    if users:
+        st.dataframe(pd.DataFrame(users), use_container_width=True)
+        c_u1, c_u2, c_u3 = st.columns([2.5, 1.5, 1.2])
+        with c_u1:
+            user_list = [u.get("email", "") for u in users if u.get("email")]
+            selected_u = st.selectbox("Select Account", user_list, key="adm_user_select")
+        with c_u2:
+            curr_role = next((u.get("role", "Researcher") for u in users if u.get("email") == selected_u), "Researcher")
+            roles = ["Researcher", "Administrator", "Viewer"]
+            r_idx = roles.index(curr_role) if curr_role in roles else 0
+            new_role = st.selectbox("Assign Role", roles, index=r_idx, key="adm_role_select")
+        with c_u3:
+            st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
+            if st.button("Save User Role", use_container_width=True, key="adm_btn_save_role"):
+                _set_user_role(selected_u, new_role)
+                if selected_u == user:
+                    st.session_state["is_admin"] = (new_role == "Administrator")
+                st.success(f"Updated role for {selected_u} to {new_role}.")
+                st.rerun()
+    else:
+        st.caption("No registered users yet.")
+
+    st.info(
+        "**Admin Credentials Guide:** The demo administrative password is `orb-admin` with email `admin@orbignite.org` (or username `admin`). "
+        "Notice: No real live admin exists right now. Induction of administrative privileges is handled developer-side. "
+        "To set your own custom password, add `ADMIN_PASSWORD = \"your_secret_password\"` in `.streamlit/secrets.toml` or set the system environment variable `ADMIN_PASSWORD`."
+    )
 
     st.subheader("Contact Messages")
     messages = []

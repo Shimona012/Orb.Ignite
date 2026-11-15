@@ -209,7 +209,7 @@ User Question: {active_query}
                             r"In microgravity ($0g$), absence of buoyancy prevents rapid convective dissipation of heat and radical species, allowing quasi-steady spherical cool flames to survive around droplets (FLEX / CFI-G). "
                             r"**Spacecraft Threat:** Unlike sealed test chambers, space habitats have continuous ECLSS airflow and oxygen replenish, preventing radiative starvation and maintaining latent reignition risks into violent hot flames."
                         )
-                    elif "spalding" in q_lower or "burning rate" in q_lower or "d2" in q_lower:
+                    elif "spalding" in q_lower or "burning rate" in q_lower or "d2" in q_lower or "d²" in q_lower:
                         st.markdown(
                             r"**Spalding Transfer Number ($B_T$) & $d^2$ Law:** Droplet gasification driving force is given by "
                             r"$B_T = \frac{c_{p,g}(T_\infty - T_s) + \Delta h_c Y_{\text{O}_2,\infty} / \nu}{L_v}$. "

@@ -1,6 +1,8 @@
 #SI genereated document based on human research but haphazard compilation of NASA microgravity combustion experiments.
 #Left to be human-audited and edited for clarity, accuracy, and completeness.
+import json
 import math
+import os
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -21,10 +23,67 @@ PRESET_CONFIGS = {
     "Lunar Gateway (0.16g)": {"g": 0.16, "o2": 23.0, "flow": 2.0, "p": 0.82, "area": 1.0},
     "Mars Habitat (0.38g)": {"g": 0.38, "o2": 25.0, "flow": 5.0, "p": 0.70, "area": 1.0},
     "Earth Lab (1.0g)": {"g": 1.00, "o2": 20.9, "flow": 0.0, "p": 1.00, "area": 1.0},
+    "Custom": {"g": 0.00, "o2": 21.0, "flow": 0.0, "p": 1.00, "area": 1.0},
 }
 
 
+def _preset_file_path():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_dir, "Data", "user_presets.json")
+
+
+def load_custom_preset(email=None):
+    p_path = _preset_file_path()
+    if os.path.exists(p_path):
+        try:
+            with open(p_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if email and email in data.get("users", {}):
+                return data["users"][email]
+            if "guest_default" in data:
+                return data["guest_default"]
+        except Exception:
+            pass
+    return {"g": 0.00, "o2": 21.0, "flow": 0.0, "p": 1.00, "area": 1.0}
+
+
+def save_custom_preset(email=None, cfg=None):
+    if cfg is None:
+        cfg = {
+            "g": float(st.session_state.get("fl_g", st.session_state.get("fp_g", 0.0))),
+            "o2": float(st.session_state.get("fl_o2", st.session_state.get("fp_o2", 21.0))),
+            "flow": float(st.session_state.get("fl_flow", st.session_state.get("fp_flow", 0.0))),
+            "p": float(st.session_state.get("fp_p", 1.0)),
+            "area": float(st.session_state.get("fl_area", st.session_state.get("fp_area", 1.0))),
+        }
+    p_path = _preset_file_path()
+    data = {"guest_default": cfg, "users": {}}
+    if os.path.exists(p_path):
+        try:
+            with open(p_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            pass
+    if "users" not in data:
+        data["users"] = {}
+    data["guest_default"] = cfg
+    target_email = email or st.session_state.get("auth_user")
+    if target_email:
+        data["users"][target_email] = cfg
+    try:
+        with open(p_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except Exception:
+        pass
+    PRESET_CONFIGS["Custom"] = cfg
+    return cfg
+
+
 def ensure_preset_state():
+    auth_user = st.session_state.get("auth_user")
+    saved_custom = load_custom_preset(auth_user)
+    PRESET_CONFIGS["Custom"] = saved_custom
+
     if "shared_env_preset" not in st.session_state:
         st.session_state["shared_env_preset"] = "ISS Microgravity (0g)"
     preset = st.session_state["shared_env_preset"]
@@ -42,7 +101,7 @@ def ensure_preset_state():
         "fp_g": float(cfg["g"]),
         "fp_o2": float(cfg["o2"]),
         "fp_flow": float(cfg["flow"]),
-        "fp_p": float(cfg["p"]),
+        "fp_p": float(cfg.get("p", 1.0)),
         "fp_area": float(cfg["area"]),
     }
     for k, val in defaults.items():
@@ -65,7 +124,7 @@ def on_preset_change(source_key):
         st.session_state["fp_g"] = float(cfg["g"])
         st.session_state["fp_o2"] = float(cfg["o2"])
         st.session_state["fp_flow"] = float(cfg["flow"])
-        st.session_state["fp_p"] = float(cfg["p"])
+        st.session_state["fp_p"] = float(cfg.get("p", 1.0))
         st.session_state["fp_area"] = float(cfg["area"])
 
 
@@ -73,6 +132,7 @@ def on_slider_change_to_custom(prefix=None):
     st.session_state["shared_env_preset"] = "Custom"
     for k in ("sidebar_env_preset", "fl_env_preset", "fp_env_preset"):
         st.session_state[k] = "Custom"
+    save_custom_preset()
 
 
 def _hex_to_rgb(hex_str):
@@ -224,7 +284,7 @@ FUEL_TYPES = [
     "Ethane / Propane / n-Butane / Methane (Non-Premixed Gas — ACME / CFI-G)",
     "PMMA / PTFE Teflon / Nomex (Thin & Thick Solids — BASS / BASS-II)",
     "Kapton / Teflon / Silicone Wire Insulation (Smouldering Aerosol — SAME)",
-    "Lean H2-Air / CH4-Air-Ar (Premixed Gas Flame Ball — SOFBALL)",
+    "Lean H₂-Air / CH₄-Air-Ar (Premixed Gas Flame Ball — SOFBALL)",
     "PMMA / Polyethylene Wire / Nomex in Lunar-Mars Gravity (Partial-G Solid — FLARE)",
     "Cabin Dust / Lint / Smoke Particulates (Aerosol Discrimination — DAFT)",
     "PMMA Concurrent Flow Plate (Solid Spread CFD — PSI-62)",
@@ -263,7 +323,7 @@ EXPERIMENT_PROFILES = {
         ],
         "prevention": "Isolate liquid hydrocarbon propellants/solvents; enforce 45-minute cabin hold after suppression before restoring ventilation.",
         "detection": "UV/deep-blue formaldehyde (CH2O*, 350–450 nm) optical spectroscopy; standard visible/IR sensors miss 500–800 K cool flames.",
-        "suppression": "He/CO2/N2 dilution above radiative extinction threshold; avoid premature O2 airflow re-introduction that triggers hot reignition.",
+        "suppression": "He/CO₂/N₂ dilution above radiative extinction threshold; avoid premature O₂ airflow re-introduction that triggers hot reignition.",
     },
     "SAFFIRE": {
         "code": "Saffire I–VI",
@@ -294,8 +354,8 @@ EXPERIMENT_PROFILES = {
             [0.75, "#F97316"],
             [1.0, "#FDE047"],
         ],
-        "prevention": "Enforce NASA-STD-6001 material width/thickness limits; account for 26–34% O2 exploration atmosphere acceleration.",
-        "detection": "Distributed CO/CO2 gas sensors + pressure-rise monitoring; smoke obscuration lags behind initial pyrolysis CO spike.",
+        "prevention": "Enforce NASA-STD-6001 material width/thickness limits; account for 26–34% O₂ exploration atmosphere acceleration.",
+        "detection": "Distributed CO/CO₂ gas sensors + pressure-rise monitoring; smoke obscuration lags behind initial pyrolysis CO spike.",
         "suppression": "Immediate ECLSS ventilation fan shutoff to starve oxygen transport, followed by depressurization venting and post-fire scrubbing.",
     },
     "SOFIE": {
@@ -360,7 +420,7 @@ EXPERIMENT_PROFILES = {
             [0.75, "#2DD4BF"],
             [1.0, "#A7F3D0"],
         ],
-        "prevention": "Regulate high-pressure O2 manifold lines; apply electrostatic field (E-FIELD 10 kV) ion-wind deflection near gas fittings.",
+        "prevention": "Regulate high-pressure O₂ manifold lines; apply electrostatic field (E-FIELD 10 kV) ion-wind deflection near gas fittings.",
         "detection": "Bandpass CH2O* (390–490 nm blue-green) and OH* (310 nm) chemiluminescence sensors.",
         "suppression": "Drive Damköhler number below critical limit (Da < 1) via high-strain inert jet blow-off or fuel shutoff valve.",
     },
@@ -395,7 +455,7 @@ EXPERIMENT_PROFILES = {
         ],
         "prevention": "Avoid intermediate cabin drafts (10–20 cm/s) where microgravity oxygen limits are lower than 1g Earth baselines.",
         "detection": "Boundary-layer optical imaging; flame flattens tightly against solid surfaces under low flow.",
-        "suppression": "Direct N2 extinguisher tangential/parallel to polymer surface or drop ventilation < 5 cm/s to induce radiative quenching.",
+        "suppression": "Direct N₂ extinguisher tangential/parallel to polymer surface or drop ventilation < 5 cm/s to induce radiative quenching.",
     },
     "SAME": {
         "code": "SAME / SAME-R",
@@ -459,9 +519,9 @@ EXPERIMENT_PROFILES = {
             [0.8, "#60A5FA"],
             [1.0, "#DBEAFE"],
         ],
-        "prevention": "Eliminate stagnant pockets in battery/electrolysis compartments where lean H2 or CH4 can accumulate (Le ~ 0.3).",
+        "prevention": "Eliminate stagnant pockets in battery/electrolysis compartments where lean H₂ or CH₄ can accumulate (Le ~ 0.3).",
         "detection": "High-sensitivity IR thermal imaging; flame balls release only ~1 W thermal power and do not flicker or rise.",
-        "suppression": "Induce convective air currents (increase Peclet number Pe) or sweep with CO2/He radiative quenchants.",
+        "suppression": "Induce convective air currents (increase Peclet number Pe) or sweep with CO₂/He radiative quenchants.",
     },
     "FLARE": {
         "code": "FLARE / FM2",
@@ -494,7 +554,7 @@ EXPERIMENT_PROFILES = {
         ],
         "prevention": "Certify materials specifically at 0.16g Lunar gravity where minimum limiting oxygen concentration (LOC) is lowest.",
         "detection": "Account for weak buoyant plumes (Gr ~ 10²–10³) that tilt flames at intermediate angles between 0g and 1g.",
-        "suppression": "High-momentum inert gas sweep; partial-gravity buoyancy continuously replenishes O2 unless fully blanketed.",
+        "suppression": "High-momentum inert gas sweep; partial-gravity buoyancy continuously replenishes O₂ unless fully blanketed.",
     },
     "DAFT": {
         "code": "DAFT / DAFT-2",
@@ -527,7 +587,7 @@ EXPERIMENT_PROFILES = {
         ],
         "prevention": "Pre-filter cabin return ducts around crew exercise and vacuum maintenance stations.",
         "detection": "Dual-wavelength multi-angle polarized scattering to separate spherical smoke (low δ_p) from jagged dust (high δ_p).",
-        "suppression": "Verify true CO/CO2 combustion signature before discharging halon/water-mist or depressurizing cabin.",
+        "suppression": "Verify true CO/CO₂ combustion signature before discharging halon/water-mist or depressurizing cabin.",
     },
     "PSI62": {
         "code": "PSI-62 CFD",

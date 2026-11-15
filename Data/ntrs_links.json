@@ -141,7 +141,7 @@
     "fuel": "Water Mist Extinguishant",
     "year": 2012,
     "pdf_file": "20120018019.pdf",
-    "summary": "Rodriguez, Graf, Carlile, and Young (NASA JSC) design and validation of the ISS portable Fine Water Mist fire extinguisher replacing CO2 hardware."
+    "summary": "Rodriguez, Graf, Carlile, and Young (NASA JSC) design and validation of the ISS portable Fine Water Mist fire extinguisher replacing CO₂ hardware."
   },
   {
     "id": "NTRS-20130000422",
@@ -258,7 +258,7 @@
     "title": "Saffire-IV: Fire Safety in Exploration Atmospheres (Elevated Oxygen, Reduced Pressure)",
     "citation_url": "https://ntrs.nasa.gov/citations/20210011521",
     "mission": "Saffire-IV",
-    "fuel": "Nomex, PMMA, SIBAL in 26.5-34% O2",
+    "fuel": "Nomex, PMMA, SIBAL in 26.5-34% O₂",
     "year": 2021,
     "pdf_file": "",
     "summary": "Characterizes flammability boundaries and pressure transient response under Artemis Gateway / Lunar Exploration environmental conditions."
@@ -426,7 +426,7 @@
     "title": "Effects of Ambient Inert Gas Properties on Cool-Flame Combustion of Normal-Alkane Droplets (Nayagam, Dietrich, Williams)",
     "citation_url": "",
     "mission": "FLEX Theoretical Modeling",
-    "fuel": "Normal-Alkane Droplets in N2/He/CO2",
+    "fuel": "Normal-Alkane Droplets in N₂/He/CO₂",
     "year": 2017,
     "pdf_file": "Effects of ambient inert gas properties -Combustion Science-Nayagam-FAW.pdf",
     "summary": "External paper analyzing Lewis number and thermal diffusivity effects of inert diluents on microgravity cool flame persistence and extinction."
@@ -453,7 +453,7 @@
     "fuel": "Exploration Atmosphere Solid Materials",
     "year": 2021,
     "pdf_file": "ICES 2021-266 0503-2021 final.pdf",
-    "summary": "External ICES-2021 conference paper examining reduced-pressure / elevated-O2 flame spread acceleration and post-fire cabin scrubber performance."
+    "summary": "External ICES-2021 conference paper examining reduced-pressure / elevated-O₂ flame spread acceleration and post-fire cabin scrubber performance."
   },
   {
     "id": "EXT-PAPER-HERVIG-SOFIE",
@@ -501,7 +501,7 @@
     "fuel": "Gaseous Spherical Diffusion Flames",
     "year": 2021,
     "pdf_file": "Radiation Paper CNF final.pdf",
-    "summary": "External Combustion and Flame manuscript quantifying CO2/H2O radiative heat loss across hot, warm, and cool flame pressure regimes."
+    "summary": "External Combustion and Flame manuscript quantifying CO₂/H₂O radiative heat loss across hot, warm, and cool flame pressure regimes."
   },
   {
     "id": "EXT-PAPER-GAS-COOL",

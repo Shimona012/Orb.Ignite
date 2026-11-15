@@ -20,6 +20,10 @@ def render():
             on_change=combustion_physics.on_preset_change,
             args=("fp_env_preset",),
         )
+        if scenario_preset == "Custom":
+            if st.button("Save Custom Preset", key="fp_save_custom", use_container_width=True):
+                combustion_physics.save_custom_preset()
+                st.success("Custom preset saved.")
     with c_top2:
         exp_context = st.selectbox(
             "Experiment / Mission Context",

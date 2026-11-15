@@ -1,0 +1,18 @@
+{
+  "guest_default": {
+    "g": 0.0,
+    "o2": 21.0,
+    "flow": 0.0,
+    "p": 1.0,
+    "area": 1.0
+  },
+  "users": {
+    "astronaut@artemis.org": {
+      "g": 0.12,
+      "o2": 28.5,
+      "flow": 7.2,
+      "p": 0.85,
+      "area": 2.4
+    }
+  }
+}

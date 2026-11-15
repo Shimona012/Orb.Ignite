@@ -177,7 +177,7 @@ def render(experiments_data):
             unsafe_allow_html=True,
         )
     with f_toggle_col2:
-        show_funnel = st.toggle("Show Funnel View", value=True, key="mc_toggle_funnel")
+        show_funnel = st.toggle("Show Funnel View", value=False, key="mc_toggle_funnel")
 
     filtered = experiments_data
     if search_q:

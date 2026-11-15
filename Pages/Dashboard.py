@@ -13,6 +13,7 @@ import About
 import KnowledgeBase
 import contact_us
 import combustion_physics
+import ambience
 
 
 #need to make hoverable carts for the bottom 3 buttons
@@ -223,6 +224,8 @@ with st.sidebar:
     )
     st.divider()
     Authentication.render_sidebar_auth()
+
+ambience.render_ambience(scenario_preset)
 
 admin_portal_open = st.session_state.get("show_admin_portal", False)
 

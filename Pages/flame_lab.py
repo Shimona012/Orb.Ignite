@@ -100,6 +100,10 @@ def render():
             args=("fl",),
         )
         colorscheme = st.selectbox("Color Palette", ["Dynamic (Experiment Optical)", "Dynamic (Temp)", "Hot", "Inferno", "Turbo", "Plasma"], key="fl_colorscheme")
+        if scenario_preset == "Custom":
+            if st.button("Save Custom Preset", key="fl_save_custom", use_container_width=True):
+                combustion_physics.save_custom_preset()
+                st.success("Custom preset profile saved.")
 
         state = combustion_physics.evaluate_combustion_state(fuel_type, gravity, oxygen, ventilation, area_m2=area_m2)
         st.markdown(

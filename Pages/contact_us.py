@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from email.message import EmailMessage
 import json
 import os
+import re
 import smtplib
 import streamlit as st
 import Authentication
@@ -65,26 +66,40 @@ def render():
     default_rcv = default_rcv or os.getenv("CONTACT_RECEIVER_EMAIL", "")
 
     with st.form("contact_us_form", clear_on_submit=True):
-        name = st.text_input("Name")
-        email = st.text_input("Your Email (Reply-To)")
-        receiver = st.text_input("Receiver Email (Send To)", value=default_rcv, placeholder="e.g. investigator@nasa.gov or your recipient")
-        message = st.text_area("Message")
+        name = st.text_input("Name", placeholder="Your name or callsign")
+        email = st.text_input("Your Email (Reply-To)", placeholder="researcher@agency.org")
+        receiver = st.text_input(
+            "Receiver Email (Optional — for inter-researcher communication)",
+            placeholder="Leave blank to send directly to Orb.Ignite Team without disclosing mailbox",
+        )
+        message = st.text_area("Message", placeholder="Enter your scientific inquiry, observation, or telemetry request...")
         submitted = st.form_submit_button("Send Message")
         if submitted:
-            if not name.strip() or not email.strip() or not message.strip():
+            email_clean = email.strip()
+            if not name.strip() or not email_clean or not message.strip():
                 st.error("Please fill in your name, email, and message.")
+            elif not re.match(r"^[\w\.\+\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-\.]+$", email_clean):
+                st.error("Please enter a valid reply-to email address.")
             else:
-                target_receiver = receiver.strip() or default_rcv
-                payload = {
-                    "name": name.strip(),
-                    "email": email.strip(),
-                    "receiver": target_receiver,
-                    "message": message.strip(),
-                    "created_at": datetime.now(timezone.utc).isoformat(),
-                }
-                _save_contact_message(payload)
-                try:
-                    _send_email_if_configured(name.strip(), email.strip(), message.strip(), receiver_email=target_receiver)
-                except Exception:
-                    pass
-                st.success(f"Message sent successfully to {target_receiver or 'configured receiver'}.")
+                raw_rcv = receiver.strip()
+                if raw_rcv and not re.match(r"^[\w\.\+\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-\.]+$", raw_rcv):
+                    st.error("Please enter a valid recipient email address or leave it blank.")
+                else:
+                    target_receiver = raw_rcv if raw_rcv else (default_rcv or "admin@orbignite.org")
+                    stored_receiver_label = raw_rcv if raw_rcv else "Orb.Ignite Project Mailbox (Direct)"
+                    payload = {
+                        "name": name.strip(),
+                        "email": email_clean,
+                        "receiver": stored_receiver_label,
+                        "message": message.strip(),
+                        "created_at": datetime.now(timezone.utc).isoformat(),
+                    }
+                    _save_contact_message(payload)
+                    try:
+                        _send_email_if_configured(name.strip(), email_clean, message.strip(), receiver_email=target_receiver)
+                    except Exception:
+                        pass
+                    if raw_rcv:
+                        st.success(f"Message forwarded successfully to {raw_rcv}.")
+                    else:
+                        st.success("Message sent securely to the Orb.Ignite Project Team.")
