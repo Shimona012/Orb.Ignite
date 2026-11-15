@@ -79,7 +79,7 @@ def _load_users_file():
                     return users
         except Exception:
             pass
-    admin_email = os.getenv("ADMIN_EMAIL", "admin@orbignite.org")
+    admin_email = os.getenv("ADMIN_EMAIL", "admin@orbignite.earth")
     default_users = [
         {"email": admin_email, "role": "Administrator", "created_at": datetime.now(timezone.utc).isoformat()}
     ]
@@ -105,7 +105,7 @@ def _get_user_role(email):
         admin_email = st.secrets.get("ADMIN_EMAIL") or st.secrets.get("admin_email")
     except Exception:
         pass
-    admin_email = (admin_email or os.getenv("ADMIN_EMAIL", "admin@orbignite.org")).lower()
+    admin_email = (admin_email or os.getenv("ADMIN_EMAIL", "admin@orbignite.earth")).lower()
     if clean_e in (admin_email, "admin"):
         return "Administrator"
     users = _load_users_file()
@@ -150,7 +150,7 @@ def _validate_password_strength(password):
 def _validate_email_format(email):
     if not email:
         return False
-    if email.strip().lower() in ("admin", "admin@orbignite.org"):
+    if email.strip().lower() in ("admin", "admin@orbignite.earth"):
         return True
     pattern = r"^[\w\.\+\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-\.]+$"
     return bool(re.match(pattern, email.strip()))
@@ -281,7 +281,7 @@ def _verify_admin_credentials(email, password, client=None):
         admin_email = st.secrets.get("ADMIN_EMAIL") or st.secrets.get("admin_email")
     except Exception:
         pass
-    admin_email = admin_email or os.getenv("ADMIN_EMAIL", "admin@orbignite.org")
+    admin_email = admin_email or os.getenv("ADMIN_EMAIL", "admin@orbignite.earth")
 
     
     pw_match = hmac.compare_digest(str(password or ""), str(admin_pw or ""))
@@ -435,7 +435,7 @@ def render_sidebar_auth():
                     "No real live admin exists right now; admin induction is handled developer-side."
                 )
                 with st.form("sidebar_admin_login_form", clear_on_submit=True):
-                    adm_email = st.text_input("Admin Email (or 'admin')", placeholder="admin@orbignite.org", key="u_adm_email")
+                    adm_email = st.text_input("Admin Email (or 'admin')", placeholder="admin@orbignite.earth", key="u_adm_email")
                     adm_pw = st.text_input("Admin Password", type="password", placeholder="orb-admin", key="u_adm_pw")
                     adm_submit = st.form_submit_button("Unlock Admin Portal", use_container_width=True)
                     if adm_submit:
@@ -465,7 +465,7 @@ def render_admin_portal():
     if not is_admin:
         st.info("Demonstration Mode: Default demo credentials are shown as placeholders below. No real live admin exists currently; administrative induction is performed developer-side.")
         with st.form("admin_login_direct_form", clear_on_submit=True):
-            email = st.text_input("Admin Email", placeholder="admin@orbignite.org", key="adm_direct_email")
+            email = st.text_input("Admin Email", placeholder="admin@orbignite.earth", key="adm_direct_email")
             password = st.text_input("Admin Password", type="password", placeholder="orb-admin", key="adm_direct_pw")
             submitted = st.form_submit_button("Sign In as Admin")
             if submitted:
@@ -737,7 +737,7 @@ def render_admin_portal():
         st.caption("No registered users yet.")
 
     st.info(
-        "**Admin Credentials Guide:** The demo administrative password is `orb-admin` with email `admin@orbignite.org` (or username `admin`). "
+        "**Admin Credentials Guide:** The demo administrative password is `orb-admin` with email `admin@orbignite.earth` (or username `admin`). "
         "Notice: No real live admin exists right now. Induction of administrative privileges is handled developer-side. "
         "To set your own custom password, add `ADMIN_PASSWORD = \"your_secret_password\"` in `.streamlit/secrets.toml` or set the system environment variable `ADMIN_PASSWORD`."
     )

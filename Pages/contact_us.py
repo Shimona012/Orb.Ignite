@@ -63,10 +63,13 @@ def _send_email_if_configured(name, email, message, receiver_email=None):
 
 def render():
     default_rcv = ""
+    smtp_email = None
     try:
+        smtp_email = st.secrets.get("SMTP_EMAIL")
         default_rcv = st.secrets.get("CONTACT_RECEIVER_EMAIL", "")
     except Exception:
         pass
+    smtp_email = smtp_email or os.getenv("SMTP_EMAIL")
     default_rcv = default_rcv or os.getenv("CONTACT_RECEIVER_EMAIL", "")
 
     with st.form("contact_us_form", clear_on_submit=True):
@@ -94,8 +97,8 @@ def render():
                     safe_email = re.sub(r"[\r\n]+", "", email_clean)[:180]
                     safe_rcv = re.sub(r"[\r\n]+", "", raw_rcv)[:180]
                     safe_msg = message.strip()[:5000]
-                    target_receiver = safe_rcv if safe_rcv else (default_rcv or "admin@orbignite.org")
-                    stored_receiver_label = safe_rcv if safe_rcv else "Orb.Ignite Project Mailbox (Direct)"
+                    target_receiver = safe_rcv if safe_rcv else (default_rcv or smtp_email)
+                    stored_receiver_label = safe_rcv if safe_rcv else ("Orb.Ignite Project Mailbox (Direct)" if default_rcv else "Team Mailbox (Internal)")
                     payload = {
                         "name": safe_name,
                         "email": safe_email,
@@ -105,10 +108,11 @@ def render():
                     }
                     _save_contact_message(payload)
                     try:
-                        _send_email_if_configured(safe_name, safe_email, safe_msg, receiver_email=target_receiver)
+                        if target_receiver:
+                            _send_email_if_configured(safe_name, safe_email, safe_msg, receiver_email=target_receiver)
                     except Exception:
                         pass
                     if safe_rcv:
                         st.success(f"Message forwarded successfully to {safe_rcv}.")
                     else:
-                        st.success("Message sent securely to the Orb.Ignite Project Team.")
+                        st.success("Message recorded securely in the Orb.Ignite system.")

@@ -27,7 +27,7 @@ def _load_predictor_bundle(bundle_path, bundle_mtime):
 
 
 
-@st.cache_resource
+@st.cache_resource(show_spinner=False)
 def get_cached_fire_predictor(bundle_mtime):
     bundle_path = os.path.join(_BASE_DIR, "models", "orb_ignite_fire_models.joblib")
     if not os.path.exists(bundle_path):
@@ -450,23 +450,21 @@ def render():
         evac_triggers.append(f"Composite Hazard Score `{composite_hazard}/100`")
 
     if evac_triggers and est_burn_s > 0.1 and not is_dust:
-        st.markdown(
-            f"""
-            <div style="border: 2px solid #FF2E2E; background: rgba(255, 30, 30, 0.14); padding: 18px 20px; border-radius: 10px; margin: 10px 0 16px 0;">
-                <div style="color: #FF2E2E; font-size: 1.55rem; font-weight: 900; letter-spacing: 0.02em; line-height: 1.25;">
-                    EVACUATION & CRITICAL EMERGENCY MEASURE REQUIRED
-                </div>
-                <div style="color: #FFE4E6; font-size: 1.02rem; font-weight: 700; margin-top: 8px;">
-                    Immediate hatch isolation, crew evacuation from affected module, Portable Breathing Apparatus (PBA) donning, and full ECLSS airflow shutoff recommended.
-                    {' Do NOT restore oxygen ventilation for at least 45 minutes — invisible Cool Flame hot reignition risk detected!' if cool_reig['cool_flame_active_or_probable'] else ''}
-                </div>
-                <div style="color: #FCA5A5; font-size: 0.90rem; margin-top: 6px;">
-                    Triggered by: {' | '.join(evac_triggers)}
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        evac_html = (
+            '<div style="border: 2px solid #FF2E2E; background: rgba(255, 30, 30, 0.14); padding: 18px 20px; border-radius: 10px; margin: 10px 0 16px 0;">'
+            '<div style="color: #FF2E2E; font-size: 1.55rem; font-weight: 900; letter-spacing: 0.02em; line-height: 1.25;">'
+            'EVACUATION &amp; CRITICAL EMERGENCY MEASURE REQUIRED'
+            '</div>'
+            '<div style="color: #FFE4E6; font-size: 1.02rem; font-weight: 700; margin-top: 8px;">'
+            'Immediate hatch isolation, crew evacuation from affected module, Portable Breathing Apparatus (PBA) donning, and full ECLSS airflow shutoff recommended.'
+            + (' Do NOT restore oxygen ventilation for at least 45 minutes — invisible Cool Flame hot reignition risk detected!' if cool_reig['cool_flame_active_or_probable'] else '')
+            + '</div>'
+            '<div style="color: #FCA5A5; font-size: 0.90rem; margin-top: 6px;">'
+            f"Triggered by: {' | '.join(evac_triggers)}"
+            '</div>'
+            '</div>'
         )
+        st.markdown(evac_html, unsafe_allow_html=True)
 
     #Add what would be input, what is predicted output, what fire happens, behaviour of the fire dependent on space and temperature alogn with methods of prevention and precaution measures
     with st.container(border=True):
