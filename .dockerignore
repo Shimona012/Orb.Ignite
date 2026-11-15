@@ -1,0 +1,14 @@
+#SI
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.streamlit/secrets.toml
+.git
+.gitignore
+DATASETS/
+venv/
+.venv/
+.idea/
+.vscode/

@@ -1,6 +1,9 @@
+#SI
 pandas
 numpy
 xgboost
+scikit-learn
+joblib
 plotly
 streamlit
 spotipy
