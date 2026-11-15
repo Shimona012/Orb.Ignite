@@ -583,7 +583,7 @@ else:
     if "active_footer_view" not in st.session_state:
         st.session_state["active_footer_view"] = None
 
-    f_col1, f_col2, f_col3 = st.columns([1.5, 1.5, 3.0])
+    f_col1, _, f_col2 = st.columns([1.5, 7.0, 1.5])
     with f_col1:
         if st.button("About Us", key="btn_footer_about", use_container_width=True):
             st.session_state["active_footer_view"] = "about" if st.session_state.get("active_footer_view") != "about" else None
@@ -592,8 +592,6 @@ else:
         if st.button("Contact Us", key="btn_footer_contact", use_container_width=True):
             st.session_state["active_footer_view"] = "contact" if st.session_state.get("active_footer_view") != "contact" else None
             st.rerun()
-    with f_col3:
-        st.caption("Click any button above to view platform mission or get in touch.")
 
     active_view = st.session_state.get("active_footer_view")
     if active_view:
@@ -611,8 +609,9 @@ else:
 
     st.markdown(
         """
-        <div style="text-align: center; margin-top: 2.5rem; margin-bottom: 0.75rem; font-size: 0.82rem; color: #8C9FB5; font-style: italic; letter-spacing: 0.02em;">
-            "Not all flames are meant to be flown too close to."
+        <div style="text-align: center; margin-top: 2.5rem; margin-bottom: 0.75rem; font-size: 0.82rem; color: #8C9FB5; font-style: italic; letter-spacing: 0.02em; line-height: 1.6;">
+            <div>Afterall...</div>
+            <div>Not all flames are meant to be flown too close to.</div>
         </div>
         """,
         unsafe_allow_html=True,
