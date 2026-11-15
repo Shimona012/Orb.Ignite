@@ -388,61 +388,58 @@ st.markdown(
         }
     }
 
-    /* Sidebar Top-Left Stars Cluster */
+    /* Sidebar Stars Constellation (Full Sidebar Width) */
     .orb-sidebar-stars-wrap {
-        padding: 0.85rem 0 1.5rem 4px;
+        width: 100%;
+        padding: 0.85rem 0 1.5rem 0;
         margin-bottom: 0.25rem;
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
+        display: block;
+        box-sizing: border-box;
         pointer-events: none;
         user-select: none;
     }
     .orb-stars-cluster {
-        display: inline-flex;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 9px;
         position: relative;
+        box-sizing: border-box;
         transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
     }
     .orb-star {
         display: inline-block;
         flex-shrink: 0;
         transform-origin: center center;
-        transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, fill 0.25s ease, filter 0.25s ease;
+        transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, fill 0.25s ease, stroke 0.25s ease;
     }
 
-    /* Distinct rotations and subtle vertical offset */
-    .orb-star.star-1 {
-        --base-rot: 14deg;
-        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(14deg);
-        margin-top: 0px;
+    /* Outlined (unfilled) vs Filled stars */
+    .orb-star.is-outline path,
+    .orb-star.is-outline polygon {
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 1.6px !important;
+        stroke-linejoin: round !important;
+        stroke-linecap: round !important;
     }
-    .orb-star.star-2 {
-        --base-rot: -22deg;
-        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-22deg);
-        margin-top: -3px;
+    .orb-star.is-filled path,
+    .orb-star.is-filled polygon {
+        fill: currentColor !important;
+        stroke: none !important;
     }
-    .orb-star.star-3 {
-        --base-rot: 38deg;
-        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(38deg);
-        margin-top: 2px;
-    }
-    .orb-star.star-4 {
-        --base-rot: -12deg;
-        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-12deg);
-        margin-top: -2px;
-    }
-    .orb-star.star-5 {
-        --base-rot: 50deg;
-        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(50deg);
-        margin-top: 3px;
-    }
-    .orb-star.star-6 {
-        --base-rot: -35deg;
-        transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-35deg);
-        margin-top: -4px;
-    }
+
+    /* Distinct individual rotations and natural offsets */
+    .orb-star.star-1 { --base-rot: 12deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(12deg); }
+    .orb-star.star-2 { --base-rot: -18deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-18deg); margin-top: -3px; }
+    .orb-star.star-3 { --base-rot: 32deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(32deg); margin-top: 2px; }
+    .orb-star.star-4 { --base-rot: -8deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-8deg); margin-top: -2px; }
+    .orb-star.star-5 { --base-rot: 42deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(42deg); margin-top: 3px; }
+    .orb-star.star-6 { --base-rot: -28deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-28deg); margin-top: -3px; }
+    .orb-star.star-7 { --base-rot: 20deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(20deg); margin-top: 1px; }
+    .orb-star.star-8 { --base-rot: -36deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-36deg); margin-top: -2px; }
+    .orb-star.star-9 { --base-rot: 15deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(15deg); margin-top: 2px; }
+    .orb-star.star-10 { --base-rot: -24deg; transform: scale(calc(1 - var(--cord-pull, 0) * 0.96)) rotate(-24deg); margin-top: 0px; }
 
     /* Stars "go in" (collapse inward) when pulled down or tucking */
     .orb-cord-pulling .orb-star,
@@ -460,29 +457,28 @@ st.markdown(
     body.orb-stars-tuck .orb-stars-cluster,
     html.orb-cord-pulling .orb-stars-cluster,
     html.orb-stars-tuck .orb-stars-cluster {
-        transform: scale(0.18) !important;
+        transform: scale(0.2) !important;
         opacity: 0 !important;
     }
 
-    /* Star colors: White with glow for dark theme */
+    /* Not too glowy - clean, subtle, and elegant */
+    /* Dark theme: crisp silver-white with soft faint aura */
     .orb-star,
     [data-theme="dark"] .orb-star,
     .stApp[data-theme="dark"] .orb-star,
     [data-base-theme="dark"] .orb-star {
-        fill: #FFFFFF !important;
-        color: #FFFFFF !important;
-        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.45)) !important;
-        opacity: 0.96;
+        color: #E2E8F0 !important;
+        filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.45)) !important;
+        opacity: 0.88;
     }
 
-    /* Star colors: Gray / Black for light theme */
+    /* Light theme: sleek slate/charcoal without glow */
     [data-theme="light"] .orb-star,
     .stApp[data-theme="light"] .orb-star,
     [data-base-theme="light"] .orb-star {
-        fill: #1E293B !important;
-        color: #1E293B !important;
-        filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.28)) !important;
-        opacity: 0.92;
+        color: #334155 !important;
+        filter: none !important;
+        opacity: 0.82;
     }
     </style>
     """,
@@ -511,12 +507,16 @@ with st.sidebar:
         """
         <div class="orb-sidebar-stars-wrap" aria-hidden="true">
             <div class="orb-stars-cluster">
-                <svg class="orb-star star-1" viewBox="0 0 24 24" width="20" height="20" aria-label="Flare star"><path d="M12 1 C12 7.5 7.5 12 1 12 C7.5 12 12 16.5 12 23 C12 16.5 16.5 12 23 12 C16.5 12 12 7.5 12 1 Z"/></svg>
-                <svg class="orb-star star-2" viewBox="0 0 24 24" width="15" height="15" aria-label="Classic star"><polygon points="12,1.5 15.1,8.3 22.5,9.2 17,14.3 18.5,21.7 12,18 5.5,21.7 7,14.3 1.5,9.2 8.9,8.3"/></svg>
-                <svg class="orb-star star-3" viewBox="0 0 24 24" width="18" height="18" aria-label="Eight-point burst"><path d="M12 1 L14 7 L21 5 L17 11 L23 12 L17 13 L21 19 L14 17 L12 23 L10 17 L3 19 L7 13 L1 12 L7 11 L3 5 L10 7 Z"/></svg>
-                <svg class="orb-star star-4" viewBox="0 0 24 24" width="13" height="13" aria-label="Diamond star"><path d="M12 1 L14.5 10 L23 12 L14.5 14 L12 23 L9.5 14 L1 12 L9.5 10 Z"/></svg>
-                <svg class="orb-star star-5" viewBox="0 0 24 24" width="17" height="17" aria-label="Six-point star"><polygon points="12,1.5 14.8,7.5 21.5,7.5 16.5,12 18.5,18.5 12,15 5.5,18.5 7.5,12 2.5,7.5 9.2,7.5"/></svg>
-                <svg class="orb-star star-6" viewBox="0 0 24 24" width="11" height="11" aria-label="Glint star"><path d="M12 2 Q12 12 2 12 Q12 12 12 22 Q12 12 22 12 Q12 12 12 2 Z"/></svg>
+                <svg class="orb-star is-filled star-1" viewBox="0 0 24 24" width="18" height="18"><path d="M12 1 C12 7.5 7.5 12 1 12 C7.5 12 12 16.5 12 23 C12 16.5 16.5 12 23 12 C16.5 12 12 7.5 12 1 Z"/></svg>
+                <svg class="orb-star is-outline star-2" viewBox="0 0 24 24" width="14" height="14"><polygon points="12,1.5 15.1,8.3 22.5,9.2 17,14.3 18.5,21.7 12,18 5.5,21.7 7,14.3 1.5,9.2 8.9,8.3"/></svg>
+                <svg class="orb-star is-filled star-3" viewBox="0 0 24 24" width="12" height="12"><path d="M12 1 L14.5 10 L23 12 L14.5 14 L12 23 L9.5 14 L1 12 L9.5 10 Z"/></svg>
+                <svg class="orb-star is-outline star-4" viewBox="0 0 24 24" width="17" height="17"><path d="M12 1 L14 7 L21 5 L17 11 L23 12 L17 13 L21 19 L14 17 L12 23 L10 17 L3 19 L7 13 L1 12 L7 11 L3 5 L10 7 Z"/></svg>
+                <svg class="orb-star is-filled star-5" viewBox="0 0 24 24" width="15" height="15"><polygon points="12,1.5 14.8,7.5 21.5,7.5 16.5,12 18.5,18.5 12,15 5.5,18.5 7.5,12 2.5,7.5 9.2,7.5"/></svg>
+                <svg class="orb-star is-outline star-6" viewBox="0 0 24 24" width="11" height="11"><path d="M12 2 Q12 12 2 12 Q12 12 12 22 Q12 12 22 12 Q12 12 12 2 Z"/></svg>
+                <svg class="orb-star is-outline star-7" viewBox="0 0 24 24" width="16" height="16"><path d="M12 1 C12 7.5 7.5 12 1 12 C7.5 12 12 16.5 12 23 C12 16.5 16.5 12 23 12 C16.5 12 12 7.5 12 1 Z"/></svg>
+                <svg class="orb-star is-filled star-8" viewBox="0 0 24 24" width="13" height="13"><polygon points="12,1.5 15.1,8.3 22.5,9.2 17,14.3 18.5,21.7 12,18 5.5,21.7 7,14.3 1.5,9.2 8.9,8.3"/></svg>
+                <svg class="orb-star is-outline star-9" viewBox="0 0 24 24" width="14" height="14"><path d="M12 1 L14.5 10 L23 12 L14.5 14 L12 23 L9.5 14 L1 12 L9.5 10 Z"/></svg>
+                <svg class="orb-star is-filled star-10" viewBox="0 0 24 24" width="16" height="16"><path d="M12 1 L14 7 L21 5 L17 11 L23 12 L17 13 L21 19 L14 17 L12 23 L10 17 L3 19 L7 13 L1 12 L7 11 L3 5 L10 7 Z"/></svg>
             </div>
         </div>
         """,
