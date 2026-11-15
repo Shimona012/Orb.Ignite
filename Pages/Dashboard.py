@@ -378,7 +378,9 @@ st.markdown(
         background-color: #FFFFFF !important;
         background: #FFFFFF !important;
         color: #0F172A !important;
-        border: 1px solid rgba(15, 23, 42, 0.2) !important;
+        border: 1.5px solid #94A3B8 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+        font-weight: 600 !important;
     }
     [data-theme="light"] .stApp button[kind="secondary"] *,
     [data-theme="light"] .stApp button[kind="secondary"] p,
@@ -400,6 +402,7 @@ st.markdown(
     [data-theme="light"] button[kind="secondaryFormSubmit"] * {
         color: #0F172A !important;
         -webkit-text-fill-color: #0F172A !important;
+        font-weight: 600 !important;
     }
     [data-theme="light"] .stApp button[kind="secondary"]:hover,
     [data-theme="light"] .stApp [data-testid="stBaseButton-secondary"]:hover,
@@ -410,9 +413,81 @@ st.markdown(
     [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] button:hover,
     .stApp[data-theme="light"] [data-testid="stFormSubmitButton"] button:hover,
     [data-theme="light"] [data-testid="stFormSubmitButton"] button:hover {
-        background-color: #F8FAFC !important;
+        background-color: #FFF7ED !important;
         border-color: #EA580C !important;
         color: #EA580C !important;
+        box-shadow: 0 2px 6px rgba(234, 88, 12, 0.18) !important;
+    }
+
+    /* Tertiary & Link Buttons in Light Mode */
+    [data-theme="light"] .stApp button[kind="tertiary"],
+    [data-theme="light"] .stApp [data-testid="baseButton-tertiary"],
+    .stApp[data-theme="light"] button[kind="tertiary"],
+    .stApp[data-theme="light"] [data-testid="baseButton-tertiary"] {
+        color: #0F172A !important;
+        font-weight: 600 !important;
+    }
+    [data-theme="light"] .stApp button[kind="tertiary"]:hover,
+    [data-theme="light"] .stApp [data-testid="baseButton-tertiary"]:hover,
+    .stApp[data-theme="light"] button[kind="tertiary"]:hover,
+    .stApp[data-theme="light"] [data-testid="baseButton-tertiary"]:hover {
+        color: #EA580C !important;
+    }
+
+    /* Toggles (Show Funnel View, etc.) in Light Mode */
+    [data-theme="light"] .stApp [data-testid="stToggle"] label,
+    .stApp[data-theme="light"] [data-testid="stToggle"] label,
+    [data-theme="light"] .stApp [data-testid="stToggle"] label *,
+    .stApp[data-theme="light"] [data-testid="stToggle"] label * {
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
+        font-weight: 600 !important;
+        opacity: 1 !important;
+    }
+    [data-theme="light"] .stApp [data-testid="stToggle"] [data-baseweb="toggle"],
+    .stApp[data-theme="light"] [data-testid="stToggle"] [data-baseweb="toggle"],
+    [data-theme="light"] .stApp [data-testid="stToggle"] [role="switch"],
+    .stApp[data-theme="light"] [data-testid="stToggle"] [role="switch"] {
+        background-color: #CBD5E1 !important;
+        border: 1.5px solid #64748B !important;
+        box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.15) !important;
+    }
+    [data-theme="light"] .stApp [data-testid="stToggle"] [aria-checked="true"],
+    .stApp[data-theme="light"] [data-testid="stToggle"] [aria-checked="true"],
+    [data-theme="light"] .stApp [data-testid="stToggle"] input:checked + div,
+    .stApp[data-theme="light"] [data-testid="stToggle"] input:checked + div {
+        background-color: #EA580C !important;
+        background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%) !important;
+        border: 1.5px solid #C2410C !important;
+        box-shadow: 0 1px 4px rgba(234, 88, 12, 0.35) !important;
+    }
+    [data-theme="light"] .stApp [data-testid="stToggle"] [role="switch"] > div,
+    .stApp[data-theme="light"] [data-testid="stToggle"] [role="switch"] > div,
+    [data-theme="light"] .stApp [data-testid="stToggle"] [data-baseweb="toggle"] > div,
+    .stApp[data-theme="light"] [data-testid="stToggle"] [data-baseweb="toggle"] > div {
+        background-color: #FFFFFF !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3) !important;
+    }
+
+    /* Checkboxes (Cool Flame Only, etc.) in Light Mode */
+    [data-theme="light"] .stApp [data-testid="stCheckbox"] label,
+    .stApp[data-theme="light"] [data-testid="stCheckbox"] label,
+    [data-theme="light"] .stApp [data-testid="stCheckbox"] label *,
+    .stApp[data-theme="light"] [data-testid="stCheckbox"] label * {
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
+        font-weight: 600 !important;
+    }
+    [data-theme="light"] .stApp [data-testid="stCheckbox"] [data-baseweb="checkbox"] > div:first-child,
+    .stApp[data-theme="light"] .stApp [data-testid="stCheckbox"] [data-baseweb="checkbox"] > div:first-child {
+        border: 1.5px solid #64748B !important;
+        border-radius: 4px !important;
+        background-color: #FFFFFF !important;
+    }
+    [data-theme="light"] .stApp [data-testid="stCheckbox"] [aria-checked="true"] > div:first-child,
+    .stApp[data-theme="light"] .stApp [data-testid="stCheckbox"] [aria-checked="true"] > div:first-child {
+        background-color: #EA580C !important;
+        border-color: #EA580C !important;
     }
 
     /* Tabs in Light Mode */
@@ -490,6 +565,24 @@ st.markdown(
         background-color: #F8FAFC !important;
         color: #0F172A !important;
         border-bottom: 2px solid #EA580C !important;
+    }
+
+    /* Plotly charts & Funnel labels in Light Mode */
+    [data-theme="light"] .stApp .js-plotly-plot .ytick text,
+    [data-theme="light"] .stApp .js-plotly-plot .xtick text,
+    [data-theme="light"] .stApp .js-plotly-plot .g-gtitle text,
+    [data-theme="light"] .stApp .js-plotly-plot .g-title text,
+    [data-theme="light"] .stApp .js-plotly-plot text.legendtext,
+    [data-theme="light"] .stApp .js-plotly-plot .pielabel text,
+    .stApp[data-theme="light"] .js-plotly-plot .ytick text,
+    .stApp[data-theme="light"] .js-plotly-plot .xtick text,
+    .stApp[data-theme="light"] .js-plotly-plot .g-gtitle text,
+    .stApp[data-theme="light"] .js-plotly-plot .g-title text,
+    .stApp[data-theme="light"] .js-plotly-plot text.legendtext,
+    .stApp[data-theme="light"] .js-plotly-plot .pielabel text {
+        fill: #0F172A !important;
+        color: #0F172A !important;
+        font-weight: 600 !important;
     }
     [data-theme="dark"] .stApp,
     .stApp[data-theme="dark"],
