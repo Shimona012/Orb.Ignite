@@ -299,11 +299,28 @@ st.markdown(
         font-family: 'PublicSans', sans-serif;
         font-weight: 800;
         font-style: italic;
-        font-size: 5.4rem;
-        color: #CF5408;
+        font-size: clamp(2.4rem, 6.5vw, 5.4rem);
         letter-spacing: 0.03em;
         line-height: 1.1;
         margin: 0;
+        display: inline-block;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }}
+    [data-theme="dark"] .orb-brand-title,
+    .stApp[data-theme="dark"] .orb-brand-title,
+    [data-base-theme="dark"] .orb-brand-title {{
+        color: #E8672A;
+        background: linear-gradient(180deg, #F2A650 0%, #E8672A 55%, #C2410C 100%);
+        filter: drop-shadow(0 0 16px rgba(232, 103, 42, 0.3));
+    }}
+    [data-theme="light"] .orb-brand-title,
+    .stApp[data-theme="light"] .orb-brand-title,
+    [data-base-theme="light"] .orb-brand-title {{
+        color: #CF5408;
+        background: linear-gradient(180deg, #E8832B 0%, #CF5408 55%, #A63A06 100%);
+        filter: drop-shadow(0 2px 6px rgba(166, 58, 6, 0.18));
     }}
     .orb-brand-tag {{
         font-family: 'DMMono', monospace;
