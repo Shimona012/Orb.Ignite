@@ -75,18 +75,21 @@ st.markdown(
     }
 
     [data-testid="stSidebar"],
-    section[data-testid="stSidebar"],
+    section[data-testid="stSidebar"] {
+        overflow: hidden !important;
+        max-height: 100vh !important;
+        max-height: 100dvh !important;
+    }
+
     [data-testid="stSidebarContent"] {
         overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: 100% !important;
         max-height: 100vh !important;
         max-height: 100dvh !important;
         overscroll-behavior: contain !important;
         -webkit-overflow-scrolling: touch !important;
-    }
-
-    [data-testid="stSidebarContent"] {
-        height: 100vh !important;
-        height: 100dvh !important;
+        scrollbar-gutter: stable;
         display: flex !important;
         flex-direction: column !important;
     }
@@ -98,9 +101,10 @@ st.markdown(
     div[data-testid="stSidebarUserContent"] > div,
     div[data-testid="stSidebarUserContent"] > div > [data-testid="stVerticalBlock"],
     div[data-testid="stSidebarUserContent"] > [data-testid="stVerticalBlock"] {
-        flex: 1 0 auto !important;
+        flex: 1 1 auto !important;
         display: flex !important;
         flex-direction: column !important;
+        min-height: 0 !important;
     }
     div[data-testid="stSidebarUserContent"] {
         overflow: visible !important;
@@ -501,7 +505,9 @@ st.markdown(
     .orb-topbar {
         display: flex;
         align-items: baseline;
-        justify-content: space-between;
+        justify-content: flex-start;
+        gap: 1.2rem;
+        flex-wrap: wrap;
         margin: 0 0 0.4rem 0;
         padding: 0;
     }
@@ -550,6 +556,7 @@ st.markdown(
         font-style: italic;
         color: #8C9FB5;
         letter-spacing: 0.04em;
+        white-space: nowrap;
     }
 
 
@@ -690,6 +697,7 @@ st.markdown(
         box-sizing: border-box;
         pointer-events: none;
         user-select: none;
+        overflow: hidden !important;
     }
     .orb-stars-cluster {
         width: 100%;
@@ -1041,7 +1049,7 @@ components.html(
 admin_portal_open = st.session_state.get("show_admin_portal", False)
 
 
-col_hdr, col_music = st.columns([8, 2])
+col_hdr, col_music = st.columns([6.0, 4.0], vertical_alignment="center")
 with col_hdr:
     st.markdown(
         """

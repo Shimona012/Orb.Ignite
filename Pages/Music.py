@@ -91,120 +91,129 @@ def _load_vinyl_b64():
 
 
 def render_header_player():
-    vinyl_b64 = _load_vinyl_b64()
-    tracks_json = json.dumps(TRACKS)
-    initial_idx = random.randrange(len(TRACKS))
+    col_fb, col_sp = st.columns([1.35, 1.0], vertical_alignment="top")
 
-    html_code = f"""
-    <style>
-        html, body {{ margin: 0; padding: 0; background: transparent; overflow: hidden; }}
-    </style>
-    <div id="music-widget" style="display:flex; flex-direction:column; align-items:flex-end; font-family:Inter,sans-serif; user-select:none; width:100%; padding-top:4px; padding-right:8px; box-sizing:border-box;">
-        <div id="vinyl-btn" title="Click: On/Mute | Double-click: Change track"
-             style="position:relative; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:6px; padding:3px; box-sizing:border-box;">
-            <img id="vinyl-img" src="data:image/png;base64,{vinyl_b64}"
-                 style="width:26px; height:26px; object-fit:contain; opacity:0.7; transition:transform 0.2s, opacity 0.2s;" />
-            <svg id="mute-slash" viewBox="0 0 36 36"
-                 style="position:absolute; top:0; left:0; width:34px; height:34px; pointer-events:none; display:block;">
-                <line x1="6" y1="30" x2="30" y2="6" stroke="#FC3D21" stroke-width="2.8" stroke-linecap="round" />
-            </svg>
-        </div>
-        <div id="track-label" style="font-size:10px; color:#8C9FB5; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:right; margin-top:2px;">
-            Muted
-        </div>
-        <div id="player-wrap" style="display:none; margin-top:4px; width:100%;">
-            <iframe id="sp-iframe" src="" width="100%" height="80" frameBorder="0"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"
-                    style="border-radius:6px; display:block;"></iframe>
-        </div>
-    </div>
-    <script>
-        const tracks = {tracks_json};
-        let idx = {initial_idx};
-        let isOn = false;
-        let clickTimer = null;
+    with col_fb:
+        with st.expander("NASA Audio / Fallback", expanded=False):
+            fallback_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Data", "MUSIC")
+            fallback_tracks = [
+                {"name": "Golden Age (Walz)", "file": "golden-age-walz-main-version-4077-03-22.mp3", "credit": "Uppbeat | License: 3TI5DPK80SFLD86C"},
+                {"name": "Moonlight Drive (Bensound)", "file": "bensound-moonlightdrive.mp3", "credit": "Bensound / Yunior Arronte | License: RUOL1IOWB4D33SIE"},
+                {"name": "Time (Avanti)", "file": "Avanti - Time (freetouse.com).mp3", "credit": "Avanti / freetouse.com (Free Download)"},
+            ]
+            options = ["Off (Select track to play)"] + [t["name"] for t in fallback_tracks]
+            sel_name = st.selectbox(
+                "Select Fallback Track",
+                options,
+                index=0,
+                key="header_fb_music_sel",
+                label_visibility="collapsed",
+            )
+            track_obj = next((t for t in fallback_tracks if t["name"] == sel_name), None)
+            if track_obj:
+                local_path = os.path.join(fallback_dir, track_obj["file"])
+                if os.path.exists(local_path):
+                    st.audio(local_path, format="audio/mp3")
+                    st.caption(track_obj["credit"])
 
-        const btn = document.getElementById("vinyl-btn");
-        const img = document.getElementById("vinyl-img");
-        const slash = document.getElementById("mute-slash");
-        const label = document.getElementById("track-label");
-        const wrap = document.getElementById("player-wrap");
-        const iframe = document.getElementById("sp-iframe");
+    with col_sp:
+        vinyl_b64 = _load_vinyl_b64()
+        tracks_json = json.dumps(TRACKS)
+        initial_idx = random.randrange(len(TRACKS))
 
-        try {{
-            const bg = window.parent.getComputedStyle(window.parent.document.body).backgroundColor;
-            const m = bg.match(/\\d+/g);
-            if (m && (0.299 * m[0] + 0.587 * m[1] + 0.114 * m[2]) > 128) {{
+        html_code = f"""
+        <style>
+            html, body {{ margin: 0; padding: 0; background: transparent; overflow: hidden; }}
+        </style>
+        <div id="music-widget" style="display:flex; flex-direction:column; align-items:flex-end; font-family:Inter,sans-serif; user-select:none; width:100%; padding-top:4px; padding-right:38px; box-sizing:border-box;">
+            <div id="vinyl-btn" title="Click: On/Mute | Double-click: Change track"
+                 style="position:relative; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:6px; padding:3px; box-sizing:border-box;">
+                <img id="vinyl-img" src="data:image/png;base64,{vinyl_b64}"
+                     style="width:26px; height:26px; object-fit:contain; opacity:0.7; transition:transform 0.2s, opacity 0.2s;" />
+                <svg id="mute-slash" viewBox="0 0 36 36"
+                     style="position:absolute; top:0; left:0; width:34px; height:34px; pointer-events:none; display:block;">
+                    <line x1="6" y1="30" x2="30" y2="6" stroke="#FC3D21" stroke-width="2.8" stroke-linecap="round" />
+                </svg>
+            </div>
+            <div id="track-label" style="font-size:10px; color:#8C9FB5; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:right; margin-top:2px;">
+                Muted
+            </div>
+            <div id="player-wrap" style="display:none; margin-top:4px; width:100%;">
+                <iframe id="sp-iframe" src="" width="100%" height="80" frameBorder="0"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"
+                        style="border-radius:6px; display:block;"></iframe>
+            </div>
+        </div>
+        <script>
+            const tracks = {tracks_json};
+            let idx = {initial_idx};
+            let isOn = false;
+            let clickTimer = null;
+
+            const btn = document.getElementById("vinyl-btn");
+            const img = document.getElementById("vinyl-img");
+            const slash = document.getElementById("mute-slash");
+            const label = document.getElementById("track-label");
+            const wrap = document.getElementById("player-wrap");
+            const iframe = document.getElementById("sp-iframe");
+
+            try {{
+                const bg = window.parent.getComputedStyle(window.parent.document.body).backgroundColor;
+                const m = bg.match(/\\d+/g);
+                if (m && (0.299 * m[0] + 0.587 * m[1] + 0.114 * m[2]) > 128) {{
+                    btn.style.backgroundColor = "transparent";
+                }} else {{
+                    btn.style.backgroundColor = "#FFFFFF";
+                }}
+            }} catch (e) {{
                 btn.style.backgroundColor = "transparent";
-            }} else {{
-                btn.style.backgroundColor = "#FFFFFF";
             }}
-        }} catch (e) {{
-            btn.style.backgroundColor = "transparent";
-        }}
 
-        function updateUI() {{
-            if (window.frameElement) {{
-                window.frameElement.style.height = isOn ? "140px" : "56px";
+            function updateUI() {{
+                if (window.frameElement) {{
+                    const h = isOn ? "148px" : "56px";
+                    window.frameElement.style.height = h;
+                    if (window.frameElement.parentElement) {{
+                        window.frameElement.parentElement.style.height = h;
+                        window.frameElement.parentElement.style.minHeight = h;
+                    }}
+                }}
+                if (isOn) {{
+                    slash.style.display = "none";
+                    img.style.opacity = "1";
+                    label.textContent = tracks[idx].name;
+                    label.style.color = "#E8672A";
+                    wrap.style.display = "block";
+                    iframe.src = "https://open.spotify.com/embed/track/" + tracks[idx].id + "?utm_source=generator&theme=0";
+                }} else {{
+                    slash.style.display = "block";
+                    img.style.opacity = "0.55";
+                    label.textContent = "Muted";
+                    label.style.color = "#8C9FB5";
+                    wrap.style.display = "none";
+                    iframe.src = "";
+                }}
             }}
-            if (isOn) {{
-                slash.style.display = "none";
-                img.style.opacity = "1";
-                label.textContent = tracks[idx].name;
-                label.style.color = "#E8672A";
-                wrap.style.display = "block";
-                iframe.src = "https://open.spotify.com/embed/track/" + tracks[idx].id + "?utm_source=generator&theme=0";
-            }} else {{
-                slash.style.display = "block";
-                img.style.opacity = "0.55";
-                label.textContent = "Muted";
-                label.style.color = "#8C9FB5";
-                wrap.style.display = "none";
-                iframe.src = "";
-            }}
-        }}
 
-        btn.addEventListener("click", function() {{
-            if (clickTimer) return;
-            clickTimer = setTimeout(function() {{
-                clickTimer = null;
-                isOn = !isOn;
+            btn.addEventListener("click", function() {{
+                if (clickTimer) return;
+                clickTimer = setTimeout(function() {{
+                    clickTimer = null;
+                    isOn = !isOn;
+                    updateUI();
+                }}, 230);
+            }});
+
+            btn.addEventListener("dblclick", function(e) {{
+                e.preventDefault();
+                if (clickTimer) {{
+                    clearTimeout(clickTimer);
+                    clickTimer = null;
+                }}
+                idx = (idx + 1) % tracks.length;
+                isOn = true;
                 updateUI();
-            }}, 230);
-        }});
-
-        btn.addEventListener("dblclick", function(e) {{
-            e.preventDefault();
-            if (clickTimer) {{
-                clearTimeout(clickTimer);
-                clickTimer = null;
-            }}
-            idx = (idx + 1) % tracks.length;
-            isOn = true;
-            updateUI();
-        }});
-    </script>
-    """
-    components.html(html_code, height=56)
-
-    with st.expander("NASA Audio / Offline Fallback", expanded=False):
-        fallback_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Data", "MUSIC")
-        fallback_tracks = [
-            {"name": "Golden Age (Walz)", "file": "golden-age-walz-main-version-4077-03-22.mp3", "credit": "Uppbeat | License: 3TI5DPK80SFLD86C"},
-            {"name": "Moonlight Drive (Bensound)", "file": "bensound-moonlightdrive.mp3", "credit": "Bensound / Yunior Arronte | License: RUOL1IOWB4D33SIE"},
-            {"name": "Time (Avanti)", "file": "Avanti - Time (freetouse.com).mp3", "credit": "Avanti / freetouse.com (Free Download)"},
-        ]
-        options = ["Off (Select track to play)"] + [t["name"] for t in fallback_tracks]
-        sel_name = st.selectbox(
-            "Select Fallback Track",
-            options,
-            index=0,
-            key="header_fb_music_sel",
-            label_visibility="collapsed",
-        )
-        track_obj = next((t for t in fallback_tracks if t["name"] == sel_name), None)
-        if track_obj:
-            local_path = os.path.join(fallback_dir, track_obj["file"])
-            if os.path.exists(local_path):
-                st.audio(local_path, format="audio/mp3")
-                st.caption(track_obj["credit"])
+            }});
+        </script>
+        """
+        components.html(html_code, height=56)
