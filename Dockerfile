@@ -21,6 +21,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy repository files
 COPY . .
 
+# Patch Streamlit index.html with OpenGraph and Twitter meta tags for rich link previews
+RUN python patch_index.py
+
 # Expose standard Cloud Run port
 EXPOSE 8080
 

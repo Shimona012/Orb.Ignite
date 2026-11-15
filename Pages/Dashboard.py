@@ -18,7 +18,7 @@ import ambience
 
 
 #Setting page config for dashboard
-st.set_page_config(page_title="Dashboard", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Orb.Ignite", layout="wide", initial_sidebar_state="collapsed")
 
 
 @st.dialog("Help / Metric Guide", width="large")
@@ -144,6 +144,7 @@ st.markdown(
     [data-theme="light"] .stApp p,
     [data-theme="light"] .stApp li,
     [data-theme="light"] .stApp label,
+    [data-theme="light"] .stApp summary,
     [data-theme="light"] .stApp [data-testid="stMetricValue"],
     [data-theme="light"] .stApp [data-testid="stMetricLabel"] {
         color: #0F172A;
@@ -151,29 +152,172 @@ st.markdown(
     [data-theme="light"] .stApp .orb-brand-tag {
         color: #475569 !important;
     }
+
+    /* All Containers, Expanders, and Cards in Light Mode */
     [data-theme="light"] .stApp [data-testid="stExpander"],
-    [data-theme="light"] .stApp [data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(255, 255, 255, 0.85) !important;
-        border-color: rgba(15, 23, 42, 0.14) !important;
+    [data-theme="light"] .stApp [data-testid="stExpander"] details,
+    [data-theme="light"] .stApp [data-testid="stExpander"] summary,
+    [data-theme="light"] .stApp [data-testid="stExpander"] [data-testid="stExpanderDetails"],
+    [data-theme="light"] .stApp [data-testid="stVerticalBlockBorderWrapper"],
+    [data-theme="light"] .stApp [data-testid="stVerticalBlockBorderWrapper"] > div,
+    [data-theme="light"] .stApp [data-testid="stForm"],
+    [data-theme="light"] .stApp [data-testid="stForm"] > div {
+        background-color: #FFFFFF !important;
+        background: #FFFFFF !important;
+        border-color: rgba(15, 23, 42, 0.16) !important;
+        color: #0F172A !important;
     }
-    [data-theme="light"] .stApp [data-testid="stSidebar"] {
+    [data-theme="light"] .stApp [data-testid="stExpander"] summary:hover,
+    [data-theme="light"] .stApp [data-testid="stExpander"] summary:focus {
+        background-color: #F8FAFC !important;
+        background: #F8FAFC !important;
+    }
+    [data-theme="light"] .stApp [data-testid="stExpander"] summary,
+    [data-theme="light"] .stApp [data-testid="stExpander"] summary *,
+    [data-theme="light"] .stApp [data-testid="stExpander"] summary p,
+    [data-theme="light"] .stApp [data-testid="stExpander"] summary span,
+    [data-theme="light"] .stApp [data-testid="stExpander"] summary svg {
+        color: #0F172A !important;
+        fill: #0F172A !important;
+    }
+
+    /* Sidebar in Light Mode */
+    [data-theme="light"] .stApp [data-testid="stSidebar"],
+    [data-theme="light"] [data-testid="stSidebar"] {
         background-color: #F1F5F9 !important;
         color: #0F172A !important;
     }
-    [data-theme="light"] .stApp [data-baseweb="select"] > div,
+    [data-theme="light"] [data-testid="stSidebar"] hr {
+        border-color: rgba(15, 23, 42, 0.14) !important;
+    }
+
+    /* All Inputs, Textareas, and Selects in Light Mode */
+    [data-theme="light"] .stApp input,
+    [data-theme="light"] .stApp textarea,
+    [data-theme="light"] .stApp [data-baseweb="input"],
     [data-theme="light"] .stApp [data-baseweb="input"] > div,
+    [data-theme="light"] .stApp [data-baseweb="base-input"],
     [data-theme="light"] .stApp [data-baseweb="base-input"] > input,
-    [data-theme="light"] .stApp textarea {
-        background-color: rgba(255, 255, 255, 0.94) !important;
+    [data-theme="light"] .stApp [data-testid="stTextInputRootElement"],
+    [data-theme="light"] .stApp [data-testid="stTextInputRootElement"] > div,
+    [data-theme="light"] .stApp [data-testid="stNumberInputContainer"],
+    [data-theme="light"] .stApp [data-testid="stNumberInputContainer"] > div,
+    [data-theme="light"] .stApp [data-baseweb="select"],
+    [data-theme="light"] .stApp [data-baseweb="select"] > div {
+        background-color: #FFFFFF !important;
+        background: #FFFFFF !important;
         color: #0F172A !important;
-        border-color: rgba(15, 23, 42, 0.18) !important;
+        border-color: rgba(15, 23, 42, 0.22) !important;
+        -webkit-text-fill-color: #0F172A !important;
     }
+    [data-theme="light"] .stApp input::placeholder,
+    [data-theme="light"] .stApp textarea::placeholder {
+        color: #64748B !important;
+        -webkit-text-fill-color: #64748B !important;
+        opacity: 0.85 !important;
+    }
+    [data-theme="light"] .stApp [data-baseweb="input"] svg,
+    [data-theme="light"] .stApp [data-baseweb="base-input"] svg,
+    [data-theme="light"] .stApp [data-testid="stTextInputRootElement"] svg,
+    [data-theme="light"] .stApp [data-baseweb="select"] svg {
+        color: #475569 !important;
+        fill: currentColor !important;
+    }
+
+    /* Primary buttons (e.g. Sign In as Researcher, Plot, Run Fire Prediction) */
+    [data-theme="light"] .stApp button[kind="primary"],
+    [data-theme="light"] .stApp button[kind="primaryFormSubmit"],
+    [data-theme="light"] .stApp [data-testid="stBaseButton-primary"],
+    [data-theme="light"] .stApp [data-testid="baseButton-primary"],
+    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] > button {
+        background-color: #EA580C !important;
+        background: linear-gradient(180deg, #EA580C 0%, #C2410C 100%) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        box-shadow: 0 1px 3px rgba(194, 65, 12, 0.25) !important;
+    }
+    [data-theme="light"] .stApp button[kind="primary"] *,
+    [data-theme="light"] .stApp button[kind="primary"] p,
+    [data-theme="light"] .stApp button[kind="primaryFormSubmit"] *,
+    [data-theme="light"] .stApp button[kind="primaryFormSubmit"] p,
+    [data-theme="light"] .stApp [data-testid="stBaseButton-primary"] *,
+    [data-theme="light"] .stApp [data-testid="stBaseButton-primary"] p,
+    [data-theme="light"] .stApp [data-testid="baseButton-primary"] *,
+    [data-theme="light"] .stApp [data-testid="baseButton-primary"] p,
+    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] > button *,
+    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] > button p {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+    [data-theme="light"] .stApp button[kind="primary"]:hover,
+    [data-theme="light"] .stApp [data-testid="stBaseButton-primary"]:hover,
+    [data-theme="light"] .stApp [data-testid="baseButton-primary"]:hover,
+    [data-theme="light"] .stApp [data-testid="stFormSubmitButton"] > button:hover {
+        background-color: #C2410C !important;
+        background: #C2410C !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Secondary buttons (e.g. Plot suggestion pills, Dialog triggers) */
     [data-theme="light"] .stApp button[kind="secondary"],
+    [data-theme="light"] .stApp [data-testid="stBaseButton-secondary"],
+    [data-theme="light"] .stApp [data-testid="baseButton-secondary"],
     [data-theme="light"] .stApp [data-testid="stPopover"] > button {
-        background-color: rgba(255, 255, 255, 0.9) !important;
+        background-color: #FFFFFF !important;
+        background: #FFFFFF !important;
         color: #0F172A !important;
-        border-color: rgba(15, 23, 42, 0.18) !important;
+        border: 1px solid rgba(15, 23, 42, 0.2) !important;
     }
+    [data-theme="light"] .stApp button[kind="secondary"] *,
+    [data-theme="light"] .stApp button[kind="secondary"] p,
+    [data-theme="light"] .stApp [data-testid="stBaseButton-secondary"] *,
+    [data-theme="light"] .stApp [data-testid="stBaseButton-secondary"] p,
+    [data-theme="light"] .stApp [data-testid="baseButton-secondary"] *,
+    [data-theme="light"] .stApp [data-testid="baseButton-secondary"] p {
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
+    }
+    [data-theme="light"] .stApp button[kind="secondary"]:hover,
+    [data-theme="light"] .stApp [data-testid="stBaseButton-secondary"]:hover,
+    [data-theme="light"] .stApp [data-testid="baseButton-secondary"]:hover {
+        background-color: #F8FAFC !important;
+        border-color: #EA580C !important;
+        color: #EA580C !important;
+    }
+
+    /* Tabs in Light Mode */
+    [data-theme="light"] .stApp [data-baseweb="tab-list"] {
+        background-color: transparent !important;
+        border-bottom-color: rgba(15, 23, 42, 0.15) !important;
+    }
+    [data-theme="light"] .stApp [data-baseweb="tab"] {
+        background-color: transparent !important;
+        color: #475569 !important;
+    }
+    [data-theme="light"] .stApp [data-baseweb="tab"][aria-selected="true"] {
+        color: #EA580C !important;
+        font-weight: 700 !important;
+    }
+    [data-theme="light"] .stApp [data-baseweb="tab-highlight"] {
+        background-color: #EA580C !important;
+    }
+    [data-theme="light"] .stApp [data-testid="stTabs"] [data-testid="stTabContent"] {
+        background-color: transparent !important;
+        color: #0F172A !important;
+    }
+
+    /* Popovers, Dialogs & Modals */
+    [data-theme="light"] .stApp [data-testid="stDialog"] [role="dialog"],
+    [data-theme="light"] .stApp [data-testid="stModal"] [role="dialog"],
+    [data-theme="light"] .stApp [data-baseweb="popover"],
+    [data-theme="light"] .stApp [data-baseweb="popover"] > div,
+    [data-theme="light"] .stApp [data-baseweb="menu"] {
+        background-color: #FFFFFF !important;
+        background: #FFFFFF !important;
+        color: #0F172A !important;
+        border-color: rgba(15, 23, 42, 0.16) !important;
+    }
+
     [data-theme="light"] .stApp [data-testid="stCaptionContainer"],
     [data-theme="light"] .stApp small {
         color: #475569 !important;
@@ -377,6 +521,29 @@ st.markdown(
             min-width: 100% !important;
             flex: 1 1 100% !important;
         }
+    }
+
+    /* Metric & Prediction Value Text-Wrapping (Flame Regime, Duration, Droplet K, Hazard) */
+    [data-testid="stMetric"],
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricLabel"],
+    [data-testid="stMetricDelta"],
+    div[data-testid="stMetric"] div,
+    div[data-testid="stMetric"] label,
+    div[data-testid="stMetric"] span,
+    div[data-testid="stMetric"] p {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        text-overflow: unset !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-size: clamp(1.05rem, 1.8vw, 1.7rem) !important;
+        line-height: 1.25 !important;
+    }
+    [data-testid="stMetricLabel"] {
+        font-size: 0.85rem !important;
+        line-height: 1.2 !important;
     }
 
     @media (pointer: coarse) {
@@ -668,6 +835,30 @@ components.html(
         }
 
         applyTheme(getTheme());
+
+        try {
+            const metaDefs = [
+                { name: 'description', content: '𝘕𝘰𝘵 𝘢𝘭𝘭 𝘧𝘭𝘢𝘮𝘦𝘴 𝘢𝘳𝘦 𝘮𝘦𝘢𝘯𝘵 𝘵𝘰 𝘣𝘦 𝘧𝘭𝘰𝘸𝘯 𝘵𝘰𝘰 𝘤𝘭𝘰𝘴𝘦 𝘵𝘰.' },
+                { property: 'og:title', content: 'Orb.Ignite' },
+                { property: 'og:description', content: '𝘕𝘰𝘵 𝘢𝘭𝘭 𝘧𝘭𝘢𝘮𝘦𝘴 𝘢𝘳𝘦 𝘮𝘦𝘢𝘯𝘵 𝘵𝘰 𝘣𝘦 𝘧𝘭𝘰𝘸𝘯 𝘵𝘰𝘰 𝘤𝘭𝘰𝘴𝘦 𝘵𝘰.' },
+                { property: 'og:url', content: 'https://orbignite.earth' },
+                { property: 'og:site_name', content: 'Orb.Ignite' },
+                { name: 'twitter:title', content: 'Orb.Ignite' },
+                { name: 'twitter:description', content: '𝘕𝘰𝘵 𝘢𝘭𝘭 𝘧𝘭𝘢𝘮𝘦𝘴 𝘢𝘳𝘦 𝘮𝘦𝘢𝘯𝘵 𝘵𝘰 𝘣𝘦 𝘧𝘭𝘰𝘸𝘯 𝘵𝘰𝘰 𝘤𝘭𝘰𝘴𝘦 𝘵𝘰.' }
+            ];
+            metaDefs.forEach(m => {
+                const sel = m.name ? `meta[name="${m.name}"]` : `meta[property="${m.property}"]`;
+                let el = doc.querySelector(sel);
+                if (!el) {
+                    el = doc.createElement('meta');
+                    if (m.name) el.setAttribute('name', m.name);
+                    if (m.property) el.setAttribute('property', m.property);
+                    doc.head.appendChild(el);
+                }
+                el.setAttribute('content', m.content);
+            });
+            doc.title = 'Orb.Ignite';
+        } catch (_) {}
     })();
     </script>
     """,
