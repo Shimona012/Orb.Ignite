@@ -85,15 +85,40 @@ Make sure you have Python installed on your system (Python 3.8 or higher is reco
 
 ## Usage
 
-Run the Streamlit application using the following command:
+Run the Streamlit application locally using:
 
 ```bash
 streamlit run Pages/Dashboard.py
 ```
 
+## Deployment
+
+### 1. Docker
+Build and run the containerized application locally:
+```bash
+docker build -t orb-ignite .
+docker run -p 8080:8080 orb-ignite
+```
+
+### 2. Google Cloud Run (Production)
+Deploy directly from repository source to Google Cloud Run:
+```bash
+gcloud run deploy orb-ignite \
+  --source . \
+  --region us-central1 \
+  --project orbignite-514803 \
+  --allow-unauthenticated
+```
+Custom domains can be mapped with:
+```bash
+gcloud beta run domain-mappings create --service orb-ignite --domain orbignite.earth --region us-central1
+```
+
 ## Transparency & Super Intelligence (SI) Disclosure
 
 In the spirit of open science, academic honesty, and transparent engineering, this project openly discloses where and how **Super Intelligence (SI) / AI assistance** was utilized during the development of *Orb.Ignite*. All SI-assisted modules were driven by human literature research, engineered with domain-specific microgravity physics, and cross-verified against official NASA Physical Sciences Informatics (PSI) test data and technical reports.
+
+> **Human Oversight & Verification Note:** All SI usage occurred strictly under continuous human supervision with deep human oversight. Every line of generated logic, mathematical formulation, and model threshold was actively checked, verified, and adjusted/refined in multiple places by humans to ensure experimental correctness and safety fidelity.
 
 ### Detailed Breakdown of SI Usage by Component:
 
@@ -122,6 +147,8 @@ In the spirit of open science, academic honesty, and transparent engineering, th
 7. **External Service Integrations & Debugging (`contact_us.py`, `Music.py`)**
    - **Supabase & Persistence:** SI was used to implement and debug the Supabase client connection, local JSON failovers, and secure database storage.
    - **Spotify & Audio Integration:** SI was used to debug the Spotipy API integration, player widget styling, and offline NASA audio fallback handling.
+
+*And last, SI was used to generate the SI sections :)*
 
 ## Built With
 
