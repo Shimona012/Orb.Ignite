@@ -824,6 +824,14 @@ st.markdown(
         text-shadow: 0 0 7px rgba(15, 23, 42, 0.24), 0 0 14px rgba(51, 65, 85, 0.14) !important;
         opacity: 0.92;
     }
+
+    /* Music Widget & Custom Components Clean Container Flow */
+    [data-testid="stCustomComponentV1"]:has(#music-widget),
+    [data-testid="stCustomComponentV1"]:has(iframe#sp-iframe),
+    [data-testid="stElementContainer"]:has(#music-widget),
+    [data-testid="stElementContainer"]:has(iframe#sp-iframe) {
+        overflow: visible !important;
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -1049,7 +1057,7 @@ components.html(
 admin_portal_open = st.session_state.get("show_admin_portal", False)
 
 
-col_hdr, col_music = st.columns([6.0, 4.0], vertical_alignment="center")
+col_hdr, col_music = st.columns([4.2, 5.8], vertical_alignment="top")
 with col_hdr:
     st.markdown(
         """

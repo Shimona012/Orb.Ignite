@@ -91,7 +91,7 @@ def _load_vinyl_b64():
 
 
 def render_header_player():
-    col_fb, col_sp = st.columns([1.35, 1.0], vertical_alignment="top")
+    col_fb, col_sp = st.columns([1.0, 1.25], gap="medium", vertical_alignment="top")
 
     with col_fb:
         with st.expander("NASA Audio / Fallback", expanded=False):
@@ -125,23 +125,23 @@ def render_header_player():
         <style>
             html, body {{ margin: 0; padding: 0; background: transparent; overflow: hidden; }}
         </style>
-        <div id="music-widget" style="display:flex; flex-direction:column; align-items:flex-end; font-family:Inter,sans-serif; user-select:none; width:100%; padding-top:4px; padding-right:38px; box-sizing:border-box;">
+        <div id="music-widget" style="display:flex; flex-direction:column; align-items:flex-end; font-family:Inter,sans-serif; user-select:none; width:100%; padding-top:4px; padding-right:12px; box-sizing:border-box;">
             <div id="vinyl-btn" title="Click: On/Mute | Double-click: Change track"
-                 style="position:relative; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:6px; padding:3px; box-sizing:border-box;">
+                 style="position:relative; width:34px; height:34px; cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:6px; padding:3px; box-sizing:border-box; transition:background-color 0.2s, border-color 0.2s;">
                 <img id="vinyl-img" src="data:image/png;base64,{vinyl_b64}"
-                     style="width:26px; height:26px; object-fit:contain; opacity:0.7; transition:transform 0.2s, opacity 0.2s;" />
+                     style="width:26px; height:26px; object-fit:contain; opacity:0.75; transition:transform 0.2s, opacity 0.2s;" />
                 <svg id="mute-slash" viewBox="0 0 36 36"
                      style="position:absolute; top:0; left:0; width:34px; height:34px; pointer-events:none; display:block;">
                     <line x1="6" y1="30" x2="30" y2="6" stroke="#FC3D21" stroke-width="2.8" stroke-linecap="round" />
                 </svg>
             </div>
-            <div id="track-label" style="font-size:10px; color:#8C9FB5; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:right; margin-top:2px;">
+            <div id="track-label" style="font-size:10px; color:#8C9FB5; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:right; margin-top:2px; font-weight:500;">
                 Muted
             </div>
-            <div id="player-wrap" style="display:none; margin-top:4px; width:100%;">
+            <div id="player-wrap" style="display:none; margin-top:4px; width:100%; min-width:260px; max-width:360px;">
                 <iframe id="sp-iframe" src="" width="100%" height="80" frameBorder="0"
                         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"
-                        style="border-radius:6px; display:block;"></iframe>
+                        style="border-radius:6px; display:block; border:none; box-shadow:0 4px 14px rgba(0,0,0,0.28);"></iframe>
             </div>
         </div>
         <script>
@@ -157,41 +157,74 @@ def render_header_player():
             const wrap = document.getElementById("player-wrap");
             const iframe = document.getElementById("sp-iframe");
 
-            try {{
-                const bg = window.parent.getComputedStyle(window.parent.document.body).backgroundColor;
-                const m = bg.match(/\\d+/g);
-                if (m && (0.299 * m[0] + 0.587 * m[1] + 0.114 * m[2]) > 128) {{
-                    btn.style.backgroundColor = "transparent";
-                }} else {{
+            function syncTheme() {{
+                try {{
+                    const body = window.parent.document.body;
+                    const app = window.parent.document.querySelector('.stApp');
+                    const isLight = (body && body.getAttribute('data-theme') === 'light') ||
+                                    (app && app.getAttribute('data-theme') === 'light');
+                    if (isLight) {{
+                        btn.style.backgroundColor = "rgba(15, 23, 42, 0.06)";
+                        btn.style.border = "1px solid rgba(15, 23, 42, 0.16)";
+                        if (!isOn) {{
+                            label.style.color = "#64748B";
+                        }}
+                    }} else {{
+                        btn.style.backgroundColor = "#FFFFFF";
+                        btn.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+                        if (!isOn) {{
+                            label.style.color = "#8C9FB5";
+                        }}
+                    }}
+                }} catch (e) {{
                     btn.style.backgroundColor = "#FFFFFF";
                 }}
-            }} catch (e) {{
-                btn.style.backgroundColor = "transparent";
             }}
+            syncTheme();
+
+            try {{
+                const target = window.parent.document.body;
+                if (target && window.MutationObserver) {{
+                    const obs = new MutationObserver(syncTheme);
+                    obs.observe(target, {{ attributes: true, attributeFilter: ['data-theme', 'data-base-theme'] }});
+                }}
+            }} catch (e) {{}}
 
             function updateUI() {{
-                if (window.frameElement) {{
-                    const h = isOn ? "148px" : "56px";
-                    window.frameElement.style.height = h;
-                    if (window.frameElement.parentElement) {{
-                        window.frameElement.parentElement.style.height = h;
-                        window.frameElement.parentElement.style.minHeight = h;
+                try {{
+                    if (window.frameElement) {{
+                        const h = isOn ? "148px" : "56px";
+                        window.frameElement.style.height = h;
+                        let p = window.frameElement.parentElement;
+                        while (p && p !== window.parent.document.body) {{
+                            if (p.getAttribute && (
+                                p.getAttribute('data-testid') === 'stCustomComponentV1' ||
+                                p.getAttribute('data-testid') === 'stElementContainer' ||
+                                p.classList.contains('element-container')
+                            )) {{
+                                p.style.height = h;
+                                p.style.minHeight = h;
+                                p.style.overflow = "visible";
+                            }}
+                            p = p.parentElement;
+                        }}
                     }}
-                }}
+                }} catch (e) {{}}
+
                 if (isOn) {{
                     slash.style.display = "none";
                     img.style.opacity = "1";
                     label.textContent = tracks[idx].name;
-                    label.style.color = "#E8672A";
+                    label.style.color = "#EA580C";
                     wrap.style.display = "block";
                     iframe.src = "https://open.spotify.com/embed/track/" + tracks[idx].id + "?utm_source=generator&theme=0";
                 }} else {{
                     slash.style.display = "block";
-                    img.style.opacity = "0.55";
+                    img.style.opacity = "0.6";
                     label.textContent = "Muted";
-                    label.style.color = "#8C9FB5";
                     wrap.style.display = "none";
                     iframe.src = "";
+                    syncTheme();
                 }}
             }}
 
